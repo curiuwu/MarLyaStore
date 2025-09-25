@@ -1,7 +1,7 @@
-from app import craete_app
+from app import create_app
 
 
-app = craete_app()
+app = create_app()
 
 if __name__ == '__main__':
     print('Сервер запущен.......')
