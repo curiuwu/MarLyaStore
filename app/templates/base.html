@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}MarLya Store{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="animated-bg"></div>
+    
+    <!-- Навигация -->
+    <nav class="navbar">
+        <div class="container">
+            <div class="navbar-brand">
+                <h1>💜 MarLya Store</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="{{ url_for('main.main_page') }}" class="nav-link">Главная</a></li>
+                <li><a href="#" class="nav-link">Каталог</a></li>
+                <li><a href="#" class="nav-link">О нас</a></li>
+                <li><a href="#" class="nav-link">Контакты</a></li>
+                
+                {% if current_user.is_authenticated %}
+    <li><a href="{{ url_for('auth_profile.profile') }}" class="nav-link">Личный кабинет</a></li>
+    <li><a href="{{ url_for('auth_login.logout') }}" class="nav-link">Выйти</a></li>
+{% else %}
+    <li><a href="{{ url_for('auth_login.login_page') }}" class="nav-link">Вход</a></li>
+    <li><a href="{{ url_for('auth_register.register_page') }}" class="nav-link">Регистрация</a></li>
+{% endif %}
+                
+                <li><a href="#" class="nav-link cart-icon">🛒</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Основной контент -->
+    {% block content %}{% endblock %}
+
+    <!-- Футер -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>О магазине</h4>
+                    <ul>
+                        <li><a href="#">О нас</a></li>
+                        <li><a href="#">Контакты</a></li>
+                        <li><a href="#">Карьера</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Помощь</h4>
+                    <ul>
+                        <li><a href="#">FAQ</a></li>
+                        <li><a href="#">Доставка</a></li>
+                        <li><a href="#">Возврат</a></li>
+                    </ul>
+                </div>
+                <div class="footer-section">
+                    <h4>Соцсети</h4>
+                    <ul>
+                        <li><a href="#">Facebook</a></li>
+                        <li><a href="#">Instagram</a></li>
+                        <li><a href="#">VK</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2024 MarLya Store. Все права защищены.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>

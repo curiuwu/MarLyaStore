@@ -11,12 +11,40 @@ class Role(db.Model):
 class User(db.Model):
     __tablename__ = "Users"
     id = db.Column(db.BigInteger, primary_key=True)
-    role_id = db.Column(db.BigInteger, db.ForeignKey("roles.id"), nullable=False)
+    role_id = db.Column(db.BigInteger, db.ForeignKey("roles.id"), nullable=False, default=1)
+    
+    # Существующие поля
     name = db.Column(db.String(255), nullable=False)
     second_name = db.Column(db.String(255), nullable=False)
     age = db.Column(db.BigInteger, nullable=False)
-
+    
+    # НОВЫЕ поля
+    email = db.Column(db.String(255), unique=True, nullable=False)
+    password_hash = db.Column(db.String(255), nullable=False)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    last_login = db.Column(db.DateTime, nullable=True)
+    is_active = db.Column(db.Boolean, default=True)
+    
     role = db.relationship("Role", backref="users")
+    
+    def set_password(self, password):
+        from werkzeug.security import generate_password_hash
+        self.password_hash = generate_password_hash(password)
+    
+    def check_password(self, password):
+        from werkzeug.security import check_password_hash
+        return check_password_hash(self.password_hash, password)
+    
+    @property
+    def is_authenticated(self):
+        return True
+    
+    @property
+    def is_anonymous(self):
+        return False
+    
+    def get_id(self):
+        return str(self.id)
 
 
 class Address(db.Model):
