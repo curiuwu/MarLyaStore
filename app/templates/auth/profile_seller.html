@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+
+{% block title %}Личный кабинет продавца{% endblock %}
+
+{% block content %}
+<div class="animated-bg"></div>
+
+<section class="profile-section">
+    <div class="profile-grid">
+        <!-- Сайдбар с информацией о пользователе -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-wrapper">
+                    <div class="avatar-image">
+                        {{ user.name[0] }}{{ user.second_name[0] }}
+                    </div>
+                    <label for="avatar-upload" class="avatar-upload">
+                        📷
+                    </label>
+                    <input type="file" 
+                           id="avatar-upload" 
+                           accept="image/*" 
+                           style="display: none;"
+                           onchange="previewAvatar(this)">
+                </div>
+                <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
+                <p class="profile-email">{{ user.email }}</p>
+                <p class="profile-since">
+                    <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
+                </p>
+                <span class="role-badge" style="display: inline-block; background: #10b981; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">🏪 Продавец</span>
+            </div>
+
+            <ul class="profile-menu">
+                <li class="active">
+                    <a href="{{ url_for('auth_profile.profile') }}">
+                        <span>📊</span> Обзор магазина
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_profile.profile_orders') }}">
+                        <span>📦</span> Заказы покупателей
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📋</span> Мои товары
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>💳</span> Выплаты
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📈</span> Статистика
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_profile.profile_settings') }}">
+                        <span>⚙️</span> Настройки магазина
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_login.logout') }}">
+                        <span>🚪</span> Выйти
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="profile-content">
+            <div class="profile-header">
+                <h2>Обзор магазина</h2>
+                <a href="#" class="btn btn-primary">
+                    ➕ Добавить товар
+                </a>
+            </div>
+
+            <!-- Статистика для продавца -->
+            <div class="advantages-grid" style="margin-bottom: 30px;">
+                <div class="advantage-item">
+                    <div class="advantage-icon">📈</div>
+                    <h3>127</h3>
+                    <p>Товаров в продаже</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">💰</div>
+                    <h3>156,240 ₽</h3>
+                    <p>Заработок (месяц)</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">⭐</div>
+                    <h3>4.9</h3>
+                    <p>Рейтинг магазина</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">📦</div>
+                    <h3>43</h3>
+                    <p>Заказов в обработке</p>
+                </div>
+            </div>
+
+            <!-- Последние заказы -->
+            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">📋 Заказы на обработку</h3>
+            <div class="orders-grid">
+                {% if recent_orders %}
+                    {% for order in recent_orders %}
+                    <div class="order-card">
+                        <div class="order-header">
+                            <span class="order-number">Заказ #{{ order.id }}</span>
+                            <span class="order-status status-{{ order.status }}">{{ order.status_name }}</span>
+                        </div>
+                        <div class="order-body">
+                            <p style="color: var(--text-light); margin-bottom: 5px;">
+                                {{ order.date.strftime('%d.%m.%Y') }}
+                            </p>
+                            <p style="margin-bottom: 5px;">
+                                <strong>Покупатель:</strong> {{ order.customer_name|default('Клиент') }}
+                            </p>
+                            <p style="margin-bottom: 5px;">
+                                {% for item in order.items[:2] %}
+                                    {{ item.name }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                                {% if order.items|length > 2 %} ...{% endif %}
+                            </p>
+                        </div>
+                        <div class="order-footer">
+                            <span class="order-price">{{ order.total }} ₽</span>
+                            <a href="#" class="btn-link">Обработать →</a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(124,58,237,0.05); border-radius: 15px;">
+                        <p style="font-size: 3rem; margin-bottom: 15px;">📦</p>
+                        <p style="color: var(--text-light); margin-bottom: 20px;">Нет заказов на обработку</p>
+                    </div>
+                {% endif %}
+            </div>
+
+            <!-- Популярные товары -->
+            <div style="margin-top: 40px;">
+                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🔥 Популярные товары</h3>
+                <div class="wishlist-grid">
+                    <div class="wishlist-item">
+                        <div class="wishlist-image">👕</div>
+                        <div class="wishlist-info">
+                            <h4 class="wishlist-title">Футболка</h4>
+                            <p class="wishlist-price">1 990 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 234 просмотра</p>
+                        </div>
+                    </div>
+                    <div class="wishlist-item">
+                        <div class="wishlist-image">👟</div>
+                        <div class="wishlist-info">
+                            <h4 class="wishlist-title">Кроссовки</h4>
+                            <p class="wishlist-price">4 990 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 567 просмотров</p>
+                        </div>
+                    </div>
+                    <div class="wishlist-item">
+                        <div class="wishlist-image">🎧</div>
+                        <div class="wishlist-info">
+                            <h4 class="wishlist-title">Наушники</h4>
+                            <p class="wishlist-price">2 490 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 123 просмотра</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.querySelector('a[href*="logout"]');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                window.location.href = this.href;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

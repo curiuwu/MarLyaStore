@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Регистрация{% endblock %}
+
+{% block content %}
+<div class="animated-bg"></div>
+
+<section class="auth-section">
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="auth-header">
+                <h2 class="auth-title animate-title">Создать аккаунт</h2>
+                <p class="auth-subtitle animate-subtitle">Присоединяйтесь к MarLya Store</p>
+            </div>
+
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} animate-alert">
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+
+            <form method="POST" class="auth-form" onsubmit="return validateRegistrationForm()">
+                <div class="form-group">
+                    <label for="email" class="form-label">Email</label>
+                    <input type="email" 
+                           class="form-control" 
+                           id="email" 
+                           name="email" 
+                           placeholder="your@email.com" 
+                           required>
+                    <span class="focus-border"></span>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Имя</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               placeholder="Иван" 
+                               required>
+                        <span class="focus-border"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="second_name" class="form-label">Фамилия</label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="second_name" 
+                               name="second_name" 
+                               placeholder="Иванов" 
+                               required>
+                        <span class="focus-border"></span>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="age" class="form-label">Возраст</label>
+                    <input type="number" 
+                           class="form-control" 
+                           id="age" 
+                           name="age" 
+                           placeholder="18" 
+                           min="14" 
+                           max="120" 
+                           required>
+                    <span class="focus-border"></span>
+                </div>
+
+                <div class="form-group">
+                    <label for="password" class="form-label">Пароль</label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               class="form-control" 
+                               id="password" 
+                               name="password" 
+                               placeholder="Минимум 6 символов" 
+                               minlength="6" 
+                               required>
+                        <span class="focus-border"></span>
+                        <button type="button" class="password-toggle" onclick="togglePassword('password')">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirm_password" class="form-label">Подтверждение пароля</label>
+                    <div class="password-wrapper">
+                        <input type="password" 
+                               class="form-control" 
+                               id="confirm_password" 
+                               name="confirm_password" 
+                               placeholder="Повторите пароль" 
+                               required>
+                        <span class="focus-border"></span>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm_password')">
+                            👁️
+                        </button>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="role_id" class="form-label">Роль</label>
+                    <select class="form-control" 
+                            id="role_id" 
+                            name="role_id" 
+                            required>
+                        <option value="">Выберите вашу роль</option>
+                        {% for role in roles %}
+                            {% if role.role_name == 'user' %}
+                                <option value="{{ role.id }}">Покупатель</option>
+                            {% elif role.role_name == 'seller' %}
+                                <option value="{{ role.id }}">Продавец</option>
+                            {% elif role.role_name == 'admin' %}
+                                <option value="{{ role.id }}">Администратор</option>
+                            {% else %}
+                                <option value="{{ role.id }}">{{ role.role_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <span class="focus-border"></span>
+                </div>
+
+                <div class="form-options">
+                    <label class="checkbox-container">
+                        <input type="checkbox" name="agree_terms" required>
+                        <span class="checkmark"></span>
+                        Я принимаю <a href="#" class="terms-link">условия использования</a>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block animate-button">
+                    <span>Зарегистрироваться</span>
+                    <svg class="btn-icon" viewBox="0 0 24 24" width="20" height="20">
+                        <path fill="currentColor" d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                    </svg>
+                </button>
+            </form>
+
+            <div class="auth-footer">
+                <p>Уже есть аккаунт? 
+                    <a href="{{ url_for('auth_login.login_page') }}" class="auth-link">Войти</a>
+                </p>
+            </div>
+
+            <div class="auth-shapes">
+                <div class="shape shape-1"></div>
+                <div class="shape shape-2"></div>
+                <div class="shape shape-3"></div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
