@@ -6,8 +6,15 @@ auth_profile_bp = Blueprint("auth_profile", __name__, url_prefix="/auth")
 @auth_profile_bp.route("/profile")
 @login_required
 def profile():
-    """Личный кабинет"""
-    return render_template("auth/profile.html", user=current_user)
+    # Получаем роль пользователя
+    user_role = current_user.role.role_name if current_user.role else "user"
+    
+    if user_role == "admin":
+        return render_template("auth/profile_admin.html", user=current_user)
+    elif user_role == "seller":
+        return render_template("auth/profile_seller.html", user=current_user)
+    else:  # user/customer
+        return render_template("auth/profile_customer.html", user=current_user)
 
 @auth_profile_bp.route("/profile/orders")
 @login_required

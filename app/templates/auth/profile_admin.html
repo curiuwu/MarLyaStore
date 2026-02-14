@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+
+{% block title %}Административная панель{% endblock %}
+
+{% block content %}
+<div class="animated-bg"></div>
+
+<section class="profile-section">
+    <div class="profile-grid">
+        <!-- Сайдбар с информацией о пользователе -->
+        <div class="profile-sidebar">
+            <div class="profile-avatar">
+                <div class="avatar-wrapper">
+                    <div class="avatar-image">
+                        {{ user.name[0] }}{{ user.second_name[0] }}
+                    </div>
+                    <label for="avatar-upload" class="avatar-upload">
+                        📷
+                    </label>
+                    <input type="file" 
+                           id="avatar-upload" 
+                           accept="image/*" 
+                           style="display: none;"
+                           onchange="previewAvatar(this)">
+                </div>
+                <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
+                <p class="profile-email">{{ user.email }}</p>
+                <p class="profile-since">
+                    <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
+                </p>
+                <span class="role-badge" style="display: inline-block; background: #ef4444; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">👑 Администратор</span>
+            </div>
+
+            <ul class="profile-menu">
+                <li class="active">
+                    <a href="{{ url_for('auth_profile.profile') }}">
+                        <span>📊</span> Обзор системы
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>👥</span> Управление пользователями
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>🏪</span> Магазины продавцов
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📦</span> Все заказы
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>🚫</span> Модерация
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📈</span> Аналитика
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_profile.profile_settings') }}">
+                        <span>⚙️</span> Системные настройки
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_login.logout') }}">
+                        <span>🚪</span> Выйти
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Основной контент -->
+        <div class="profile-content">
+            <div class="profile-header">
+                <h2>Административная панель</h2>
+                <div style="display: flex; gap: 10px;">
+                    <a href="#" class="btn btn-secondary">
+                        📋 Отчеты
+                    </a>
+                    <a href="#" class="btn btn-primary">
+                        🔧 Настройки системы
+                    </a>
+                </div>
+            </div>
+
+            <!-- Статистика системы -->
+            <div class="advantages-grid" style="margin-bottom: 30px;">
+                <div class="advantage-item">
+                    <div class="advantage-icon">👥</div>
+                    <h3>3,247</h3>
+                    <p>Активных пользователей</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">🏪</div>
+                    <h3>156</h3>
+                    <p>Продавцов на платформе</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">📦</div>
+                    <h3>12,543</h3>
+                    <p>Всего заказов</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">💰</div>
+                    <h3>2.4M ₽</h3>
+                    <p>Оборот за месяц</p>
+                </div>
+            </div>
+
+            <!-- Мониторинг системы -->
+            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">⚠️ Требуют внимания</h3>
+            <div class="orders-grid">
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">🚫 Проблема</span>
+                        <span class="order-status" style="background: #ef4444; color: white;">Критичная</span>
+                    </div>
+                    <div class="order-body">
+                        <p style="color: var(--text-light); margin-bottom: 5px;">
+                            3 заказа в статусе "отменено" без причины
+                        </p>
+                        <p>Требуется проверка и сввязь с пользователями</p>
+                    </div>
+                    <div class="order-footer">
+                        <a href="#" class="btn-link">Расследовать →</a>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">⚠️ Предупреждение</span>
+                        <span class="order-status" style="background: #f59e0b; color: white;">Умеренно</span>
+                    </div>
+                    <div class="order-body">
+                        <p style="color: var(--text-light); margin-bottom: 5px;">
+                            12 новых товаров требуют модерации
+                        </p>
+                        <p>Ожидают проверки перед публикацией</p>
+                    </div>
+                    <div class="order-footer">
+                        <a href="#" class="btn-link">Модерировать →</a>
+                    </div>
+                </div>
+
+                <div class="order-card">
+                    <div class="order-header">
+                        <span class="order-number">📢 Уведомление</span>
+                        <span class="order-status" style="background: #3b82f6; color: white;">Информация</span>
+                    </div>
+                    <div class="order-body">
+                        <p style="color: var(--text-light); margin-bottom: 5px;">
+                            5 новых жалоб от пользователей
+                        </p>
+                        <p>Требуется рассмотрение и ответ</p>
+                    </div>
+                    <div class="order-footer">
+                        <a href="#" class="btn-link">Рассмотреть →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Последние действия -->
+            <div style="margin-top: 40px;">
+                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🕐 Последние действия в системе</h3>
+                <div style="background: rgba(124,58,237,0.05); border-radius: 15px; padding: 20px;">
+                    <div style="padding: 15px; border-bottom: 1px solid rgba(124,58,237,0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 5px;">👤 Новый пользователь зарегистрирован</p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">Ivan Petrov (покупатель)</p>
+                        </div>
+                        <span style="color: var(--text-light); font-size: 0.85rem;">2 мин назад</span>
+                    </div>
+
+                    <div style="padding: 15px; border-bottom: 1px solid rgba(124,58,237,0.1); display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 5px;">🏪 Новый магазин зарегистрирован</p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">TechStore (продавец)</p>
+                        </div>
+                        <span style="color: var(--text-light); font-size: 0.85rem;">15 мин назад</span>
+                    </div>
+
+                    <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <p style="font-weight: 600; margin-bottom: 5px;">📦 Заказ отмечен как доставленный</p>
+                            <p style="color: var(--text-light); font-size: 0.9rem;">Заказ #2847 от клиента Маша К.</p>
+                        </div>
+                        <span style="color: var(--text-light); font-size: 0.85rem;">1 час назад</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const logoutBtn = document.querySelector('a[href*="logout"]');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            if (confirm('Вы уверены, что хотите выйти?')) {
+                window.location.href = this.href;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

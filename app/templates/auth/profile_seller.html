@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Личный кабинет{% endblock %}
+{% block title %}Личный кабинет продавца{% endblock %}
 
 {% block content %}
 <div class="animated-bg"></div>
@@ -28,77 +28,83 @@
                 <p class="profile-since">
                     <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
                 </p>
+                <span class="role-badge" style="display: inline-block; background: #10b981; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">🏪 Продавец</span>
             </div>
 
             <ul class="profile-menu">
                 <li class="active">
-    <a href="{{ url_for('auth_profile.profile') }}">
-        <span>📊</span> Обзор
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('auth_profile.profile_orders') }}">
-        <span>📦</span> Мои заказы
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('auth_profile.profile_wishlist') }}">
-        <span>❤️</span> Избранное
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('auth_profile.profile_settings') }}">
-        <span>⚙️</span> Настройки
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('auth_profile.profile_addresses') }}">
-        <span>📍</span> Мои адреса
-    </a>
-</li>
-<li>
-    <a href="{{ url_for('auth_login.logout') }}">
-        <span>🚪</span> Выйти
-    </a>
-</li>
+                    <a href="{{ url_for('auth_profile.profile') }}">
+                        <span>📊</span> Обзор магазина
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_profile.profile_orders') }}">
+                        <span>📦</span> Заказы покупателей
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📋</span> Мои товары
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>💳</span> Выплаты
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📈</span> Статистика
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_profile.profile_settings') }}">
+                        <span>⚙️</span> Настройки магазина
+                    </a>
+                </li>
+                <li>
+                    <a href="{{ url_for('auth_login.logout') }}">
+                        <span>🚪</span> Выйти
+                    </a>
+                </li>
             </ul>
         </div>
 
         <!-- Основной контент -->
         <div class="profile-content">
             <div class="profile-header">
-                <h2>Обзор аккаунта</h2>
-                <a href="{{ url_for('auth_profile.profile_settings') }}" class="btn btn-secondary">
-                    ✏️ Редактировать профиль
+                <h2>Обзор магазина</h2>
+                <a href="#" class="btn btn-primary">
+                    ➕ Добавить товар
                 </a>
             </div>
 
-            <!-- Статистика -->
+            <!-- Статистика для продавца -->
             <div class="advantages-grid" style="margin-bottom: 30px;">
                 <div class="advantage-item">
-                    <div class="advantage-icon">📦</div>
-                    <h3>3</h3>
-                    <p>Активных заказов</p>
+                    <div class="advantage-icon">📈</div>
+                    <h3>127</h3>
+                    <p>Товаров в продаже</p>
                 </div>
                 <div class="advantage-item">
-                    <div class="advantage-icon">❤️</div>
-                    <h3>{{ user_wishlist_count|default(5) }}</h3>
-                    <p>В избранном</p>
+                    <div class="advantage-icon">💰</div>
+                    <h3>156,240 ₽</h3>
+                    <p>Заработок (месяц)</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">⭐</div>
-                    <h3>4.8</h3>
-                    <p>Рейтинг</p>
+                    <h3>4.9</h3>
+                    <p>Рейтинг магазина</p>
                 </div>
                 <div class="advantage-item">
-                    <div class="advantage-icon">🎁</div>
-                    <h3>2</h3>
-                    <p>Бонусы</p>
+                    <div class="advantage-icon">📦</div>
+                    <h3>43</h3>
+                    <p>Заказов в обработке</p>
                 </div>
             </div>
 
             <!-- Последние заказы -->
-            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">📋 Последние заказы</h3>
+            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">📋 Заказы на обработку</h3>
             <div class="orders-grid">
                 {% if recent_orders %}
                     {% for order in recent_orders %}
@@ -112,6 +118,9 @@
                                 {{ order.date.strftime('%d.%m.%Y') }}
                             </p>
                             <p style="margin-bottom: 5px;">
+                                <strong>Покупатель:</strong> {{ order.customer_name|default('Клиент') }}
+                            </p>
+                            <p style="margin-bottom: 5px;">
                                 {% for item in order.items[:2] %}
                                     {{ item.name }}{% if not loop.last %}, {% endif %}
                                 {% endfor %}
@@ -120,28 +129,28 @@
                         </div>
                         <div class="order-footer">
                             <span class="order-price">{{ order.total }} ₽</span>
-                            <a href="#" class="btn-link">Подробнее →</a>
+                            <a href="#" class="btn-link">Обработать →</a>
                         </div>
                     </div>
                     {% endfor %}
                 {% else %}
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(124,58,237,0.05); border-radius: 15px;">
                         <p style="font-size: 3rem; margin-bottom: 15px;">📦</p>
-                        <p style="color: var(--text-light); margin-bottom: 20px;">У вас пока нет заказов</p>
-                        <a href="{{ url_for('main.main_page') }}" class="btn btn-primary">Начать покупки</a>
+                        <p style="color: var(--text-light); margin-bottom: 20px;">Нет заказов на обработку</p>
                     </div>
                 {% endif %}
             </div>
 
-            <!-- Рекомендуемые товары -->
+            <!-- Популярные товары -->
             <div style="margin-top: 40px;">
-                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🔥 Рекомендуем для вас</h3>
+                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🔥 Популярные товары</h3>
                 <div class="wishlist-grid">
                     <div class="wishlist-item">
                         <div class="wishlist-image">👕</div>
                         <div class="wishlist-info">
                             <h4 class="wishlist-title">Футболка</h4>
                             <p class="wishlist-price">1 990 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 234 просмотра</p>
                         </div>
                     </div>
                     <div class="wishlist-item">
@@ -149,6 +158,7 @@
                         <div class="wishlist-info">
                             <h4 class="wishlist-title">Кроссовки</h4>
                             <p class="wishlist-price">4 990 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 567 просмотров</p>
                         </div>
                     </div>
                     <div class="wishlist-item">
@@ -156,6 +166,7 @@
                         <div class="wishlist-info">
                             <h4 class="wishlist-title">Наушники</h4>
                             <p class="wishlist-price">2 490 ₽</p>
+                            <p style="font-size: 0.85rem; color: var(--text-light);">➡️ 123 просмотра</p>
                         </div>
                     </div>
                 </div>
@@ -165,9 +176,7 @@
 </section>
 
 <script>
-// Дополнительные функции для профиля
 document.addEventListener('DOMContentLoaded', function() {
-    // Подтверждение выхода
     const logoutBtn = document.querySelector('a[href*="logout"]');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', function(e) {

@@ -105,6 +105,28 @@
                     </div>
                 </div>
 
+                <div class="form-group">
+                    <label for="role_id" class="form-label">Роль</label>
+                    <select class="form-control" 
+                            id="role_id" 
+                            name="role_id" 
+                            required>
+                        <option value="">Выберите вашу роль</option>
+                        {% for role in roles %}
+                            {% if role.role_name == 'user' %}
+                                <option value="{{ role.id }}">Покупатель</option>
+                            {% elif role.role_name == 'seller' %}
+                                <option value="{{ role.id }}">Продавец</option>
+                            {% elif role.role_name == 'admin' %}
+                                <option value="{{ role.id }}">Администратор</option>
+                            {% else %}
+                                <option value="{{ role.id }}">{{ role.role_name }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    <span class="focus-border"></span>
+                </div>
+
                 <div class="form-options">
                     <label class="checkbox-container">
                         <input type="checkbox" name="agree_terms" required>

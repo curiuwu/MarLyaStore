@@ -1,4 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
+from werkzeug.security import check_password_hash, generate_password_hash
 from app import db
 from app.models import User, Role
 from datetime import datetime
@@ -15,13 +16,21 @@ def register_page():
         name = request.form.get("name")
         second_name = request.form.get("second_name")
         age = request.form.get("age")
+        role_id = request.form.get("role_id")
+        password_hash = generate_password_hash(password=password, salt_length=18)
         
-        if not all([email, password, confirm_password, name, second_name, age]):
+        if not all([email, password, confirm_password, name, second_name, age, role_id]):
             flash("Все поля обязательны для заполнения", "danger")
             return redirect(url_for("auth_register.register_page"))
         
         if password != confirm_password:
             flash("Пароли не совпадают", "danger")
+            return redirect(url_for("auth_register.register_page"))
+        
+        # Проверка роли
+        role = Role.query.filter_by(id=int(role_id)).first()
+        if not role:
+            flash("Выбранная роль не существует", "danger")
             return redirect(url_for("auth_register.register_page"))
         
         existing_user = User.query.filter_by(email=email).first()
@@ -35,9 +44,9 @@ def register_page():
                 name=name,
                 second_name=second_name,
                 age=int(age),
-                role_id=1
+                role_id=int(role_id),
+                password_hash=password_hash 
             )
-            new_user.set_password(password)
             
             db.session.add(new_user)
             db.session.commit()
@@ -50,4 +59,5 @@ def register_page():
             flash("Ошибка при регистрации", "danger")
             print(f"Registration error: {e}")
     
-    return render_template("auth/register.html")
+    roles = Role.query.all()
+    return render_template("auth/register.html", roles=roles)
