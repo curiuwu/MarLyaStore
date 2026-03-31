@@ -78,22 +78,22 @@
             <div class="advantages-grid" style="margin-bottom: 30px;">
                 <div class="advantage-item">
                     <div class="advantage-icon">📦</div>
-                    <h3>3</h3>
+                    <h3>{{ profile_stats.active_orders_count }}</h3>
                     <p>Активных заказов</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">❤️</div>
-                    <h3>{{ user_wishlist_count|default(5) }}</h3>
+                    <h3>{{ profile_stats.wishlist_count }}</h3>
                     <p>В избранном</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">⭐</div>
-                    <h3>4.8</h3>
+                    <h3>{{ "%.1f"|format(profile_stats.rating) }}</h3>
                     <p>Рейтинг</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">💰</div>
-                    <h3>2500 ₽</h3>
+                    <h3>{{ profile_stats.bonuses }} ₽</h3>
                     <p>Бонусы</p>
                 </div>
             </div>
@@ -134,29 +134,33 @@
                 {% endif %}
             </div>
 
-            <!-- Рекомендуемые товары -->
-            <div style="margin-top: 40px;">
-                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🔥 Рекомендуем для вас</h3>
-                <div class="wishlist-grid">
-                    <div class="wishlist-item">
-                        <div class="wishlist-image">👕</div>
-                        <div class="wishlist-info">
-                            <h4 class="wishlist-title">Футболка</h4>
-                            <p class="wishlist-price">1 990 ₽</p>
-                        </div>
+            <!-- АНАЛИТИКА ПОКУПАТЕЛЯ -->
+            <div class="analytics-section" style="margin-top: 40px;">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">📊 Моя статистика</h3>
+                    <div class="period-filter" id="buyerPeriodFilter">
+                        <button class="period-btn active" data-period="30d">30 дней</button>
+                        <button class="period-btn" data-period="7d">7 дней</button>
+                        <button class="period-btn" data-period="90d">90 дней</button>
+                        <button class="period-btn" data-period="365d">Год</button>
+                        <button class="period-btn" data-period="all">Всё время</button>
                     </div>
-                    <div class="wishlist-item">
-                        <div class="wishlist-image">👟</div>
-                        <div class="wishlist-info">
-                            <h4 class="wishlist-title">Кроссовки</h4>
-                            <p class="wishlist-price">4 990 ₽</p>
-                        </div>
-                    </div>
-                    <div class="wishlist-item">
-                        <div class="wishlist-image">🎧</div>
-                        <div class="wishlist-info">
-                            <h4 class="wishlist-title">Наушники</h4>
-                            <p class="wishlist-price">2 490 ₽</p>
+                </div>
+
+                <!-- KPI-карточки для покупателя -->
+                <div class="kpi-grid" id="buyerKpiGrid">
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                </div>
+
+                <!-- ТОП категории покупателя -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">🏆 Мои любимые категории</h3>
+                    <div class="top-list" id="buyerTopCategories">
+                        <div class="top-item" style="justify-content: center; padding: 30px;">
+                            <span style="color: var(--text-light);">Загрузка...</span>
                         </div>
                     </div>
                 </div>
@@ -166,16 +170,78 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutBtn = document.querySelector('a[href*="logout"]');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                window.location.href = this.href;
-            }
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    let currentPeriod = '30d';
+    
+    async function loadBuyerAnalytics(period) {
+        try {
+            const response = await fetch('/auth/api/buyer/stats?period=' + period);
+            const data = await response.json();
+            renderBuyerKPI(data);
+            renderBuyerTopCategories(data.top_categories);
+        } catch (error) {
+            console.error('Ошибка загрузки аналитики:', error);
+        }
     }
+    
+    function renderBuyerKPI(data) {
+        const html = '<div class="kpi-card">' +
+            '<div class="kpi-icon">📦</div>' +
+            '<div class="kpi-label">Заказов</div>' +
+            '<div class="kpi-value">' + data.orders_count + '</div>' +
+            '</div>' +
+            '<div class="kpi-card">' +
+            '<div class="kpi-icon">💰</div>' +
+            '<div class="kpi-label">Потрачено</div>' +
+            '<div class="kpi-value">' + Math.round(data.total_spent).toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="kpi-card">' +
+            '<div class="kpi-icon">🎯</div>' +
+            '<div class="kpi-label">Средний чек</div>' +
+            '<div class="kpi-value">' + Math.round(data.avg_check).toLocaleString('ru-RU') + ' ₽</div>' +
+            '</div>' +
+            '<div class="kpi-card">' +
+            '<div class="kpi-icon">⭐</div>' +
+            '<div class="kpi-label">Категорий</div>' +
+            '<div class="kpi-value">' + data.top_categories.length + '</div>' +
+            '</div>';
+        document.getElementById('buyerKpiGrid').innerHTML = html;
+    }
+    
+    function renderBuyerTopCategories(categories) {
+        if (categories.length === 0) {
+            document.getElementById('buyerTopCategories').innerHTML = 
+                '<div class="empty-state" style="margin: 0; border-radius: 0;">' +
+                '<p style="color: var(--text-light);">Нет данных о покупках</p>' +
+                '</div>';
+            return;
+        }
+        let html = '';
+        categories.forEach((c, idx) => {
+            html += '<div class="top-item">' +
+                '<div style="display: flex; align-items: center; flex: 1;">' +
+                '<div class="top-item-rank">' + (idx + 1) + '</div>' +
+                '<div class="top-item-info">' +
+                '<div class="top-item-name">' + c.name + '</div>' +
+                '<div class="top-item-meta">' + c.orders + ' заказов • ' + c.qty + ' товаров • ' + Math.round(c.spent).toLocaleString('ru-RU') + ' ₽</div>' +
+                '</div>' +
+                '</div>' +
+                '<div class="top-item-value">' + c.qty + '</div>' +
+                '</div>';
+        });
+        document.getElementById('buyerTopCategories').innerHTML = html;
+    }
+    
+    document.getElementById('buyerPeriodFilter').addEventListener('click', function(e) {
+        if (e.target.classList.contains('period-btn')) {
+            document.querySelectorAll('#buyerPeriodFilter .period-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            currentPeriod = e.target.dataset.period;
+            loadBuyerAnalytics(currentPeriod);
+        }
+    });
+    
+    loadBuyerAnalytics(currentPeriod);
 });
 </script>
 {% endblock %}

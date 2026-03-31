@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+
+{% block title %}Каталог товаров - MarLya Store{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="page-title">Каталог товаров</h1>
+
+    <!-- Фильтры -->
+    <div class="filters-section">
+        <form method="GET" class="filters-form">
+            <div class="filter-group">
+                <label for="search">Поиск:</label>
+                <input type="text" id="search" name="search" value="{{ search }}" placeholder="Название или описание товара">
+            </div>
+
+            <div class="filter-group">
+                <label for="category">Категория:</label>
+                <select id="category" name="category">
+                    <option value="">Все категории</option>
+                    {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == selected_category %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Применить</button>
+        </form>
+    </div>
+
+    <!-- Товары -->
+    {% if products.items %}
+    <div class="products-grid">
+        {% for product in products.items %}
+        <div class="product-card">
+            <div class="product-image">
+                {% if product.images %}
+                <img src="{{ product.images[0].url }}" alt="{{ product.name }}">
+                {% else %}
+                <div class="no-image">Нет изображения</div>
+                {% endif %}
+            </div>
+
+            <div class="product-info">
+                <h3 class="product-title">
+                    <a href="{{ url_for('products.product_detail', product_id=product.id) }}">{{ product.name }}</a>
+                </h3>
+
+                <div class="product-rating">
+                    {% for i in range(1, 6) %}
+                    <span class="star {% if i <= product.avg_rating %}filled{% endif %}">★</span>
+                    {% endfor %}
+                    <span class="rating-text">({{ "%.1f"|format(product.avg_rating) }})</span>
+                    <span class="review-count">{{ product.review_count }} отзывов</span>
+                </div>
+
+                <p class="product-description">{{ product.description[:100] }}...</p>
+
+                <div class="product-category">
+                    Категория: {{ product.category.name }}
+                </div>
+
+                {% if product.seller %}
+                <div class="product-seller">
+                    Продавец: {{ product.seller.name }} {{ product.seller.second_name }}
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Пагинация -->
+    {% if products.has_prev or products.has_next %}
+    <div class="pagination">
+        {% if products.has_prev %}
+        <a href="{{ url_for('products.catalog', page=products.prev_num, category=selected_category, search=search) }}" class="btn btn-secondary">« Предыдущая</a>
+        {% endif %}
+
+        <span class="page-info">Страница {{ products.page }} из {{ products.pages }}</span>
+
+        {% if products.has_next %}
+        <a href="{{ url_for('products.catalog', page=products.next_num, category=selected_category, search=search) }}" class="btn btn-secondary">Следующая »</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    {% else %}
+    <div class="no-products">
+        <h3>Товары не найдены</h3>
+        <p>Попробуйте изменить параметры поиска или фильтры.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -32,11 +32,13 @@ def create_app():
     from app.routes.auth_register import auth_register_bp
     from app.routes.auth_login import auth_login_bp
     from app.routes.auth_profile import auth_profile_bp
+    from app.routes.products import products_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_register_bp)
     app.register_blueprint(auth_login_bp)
     app.register_blueprint(auth_profile_bp)
+    app.register_blueprint(products_bp)
     
     register_commands(app)
     
@@ -53,6 +55,12 @@ def register_commands(app):
             db.session.commit()
             print("✅ Создана роль 'user'")
         print("✅ База данных инициализирована")
+    
+    @app.cli.command("seed-db")
+    def seed_db():
+        """Заполнить базу демонстрационными данными"""
+        from seed_db import seed_database
+        seed_database()
     
     @app.cli.command("create-admin")
     def create_admin():

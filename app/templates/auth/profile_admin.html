@@ -165,32 +165,56 @@
                 </div>
             </div>
 
-            <!-- Последние действия -->
-            <div style="margin-top: 40px;">
-                <h3 style="margin-bottom: 20px; color: var(--dark-purple);">🕐 Последние действия в системе</h3>
-                <div style="background: rgba(124,58,237,0.05); border-radius: 15px; padding: 20px;">
-                    <div style="padding: 15px; border-bottom: 1px solid rgba(124,58,237,0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <p style="font-weight: 600; margin-bottom: 5px;">👤 Новый пользователь зарегистрирован</p>
-                            <p style="color: var(--text-light); font-size: 0.9rem;">Ivan Petrov (покупатель)</p>
-                        </div>
-                        <span style="color: var(--text-light); font-size: 0.85rem;">2 мин назад</span>
+            <!-- АНАЛИТИКА АДМИНИСТРАТОРА -->
+            <div class="analytics-section">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">📊 Общая аналитика</h3>
+                    <div class="period-filter" id="adminPeriodFilter">
+                        <button class="period-btn active" data-period="30d">30 дней</button>
+                        <button class="period-btn" data-period="7d">7 дней</button>
+                        <button class="period-btn" data-period="90d">90 дней</button>
+                        <button class="period-btn" data-period="365d">Год</button>
+                        <button class="period-btn" data-period="all">Всё время</button>
                     </div>
+                </div>
 
-                    <div style="padding: 15px; border-bottom: 1px solid rgba(124,58,237,0.1); display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <p style="font-weight: 600; margin-bottom: 5px;">🏪 Новый магазин зарегистрирован</p>
-                            <p style="color: var(--text-light); font-size: 0.9rem;">TechStore (продавец)</p>
+                <!-- KPI-карточки для администратора -->
+                <div class="kpi-grid" id="adminKpiGrid">
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                    <div class="kpi-card loading" style="height: 120px;"></div>
+                </div>
+
+                <!-- ТОП категории на маркетплейсе -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">🏆 Топ категории на маркетплейсе</h3>
+                    <div class="top-list" id="adminTopCategories">
+                        <div class="top-item" style="justify-content: center; padding: 30px;">
+                            <span style="color: var(--text-light);">Загрузка...</span>
                         </div>
-                        <span style="color: var(--text-light); font-size: 0.85rem;">15 мин назад</span>
                     </div>
+                </div>
 
-                    <div style="padding: 15px; display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <p style="font-weight: 600; margin-bottom: 5px;">📦 Заказ отмечен как доставленный</p>
-                            <p style="color: var(--text-light); font-size: 0.9rem;">Заказ #2847 от клиента Маша К.</p>
+                <!-- ТОП продавцы -->
+                <div style="margin-bottom: 30px;">
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">⭐ Топ продавцы по обороту</h3>
+                    <div class="top-list" id="adminTopSellers">
+                        <div class="top-item" style="justify-content: center; padding: 30px;">
+                            <span style="color: var(--text-light);">Загрузка...</span>
                         </div>
-                        <span style="color: var(--text-light); font-size: 0.85rem;">1 час назад</span>
+                    </div>
+                </div>
+
+                <!-- Распределение по статусам -->
+                <div>
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">📍 Заказы по статусам</h3>
+                    <div class="status-distribution" id="adminStatusDist">
+                        <div class="status-badge" style="height: 100px; display: flex; justify-content: center; align-items: center;">
+                            <span style="color: var(--text-light);">Загрузка...</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -199,16 +223,148 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    const logoutBtn = document.querySelector('a[href*="logout"]');
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            if (confirm('Вы уверены, что хотите выйти?')) {
-                window.location.href = this.href;
-            }
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    let currentPeriod = '30d';
+    
+    // Загрузка данных аналитики администратора
+    async function loadAdminAnalytics(period) {
+        try {
+            const response = await fetch(`/auth/api/admin/stats?period=${period}`);
+            const data = await response.json();
+            
+            renderAdminKPI(data);
+            renderAdminTopCategories(data.top_categories);
+            renderAdminTopSellers(data.top_sellers);
+            renderAdminStatusDist(data.orders_by_status);
+        } catch (error) {
+            console.error('Ошибка загрузки аналитики:', error);
+        }
     }
+    
+    function renderAdminKPI(data) {
+        const html = `
+            <div class="kpi-card">
+                <div class="kpi-icon">📦</div>
+                <div class="kpi-label">Всего заказов</div>
+                <div class="kpi-value">${data.total_orders}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">💰</div>
+                <div class="kpi-label">GMV оборот</div>
+                <div class="kpi-value">${Math.round(data.total_gmv).toLocaleString('ru-RU')} ₽</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">👥</div>
+                <div class="kpi-label">Покупателей</div>
+                <div class="kpi-value">${data.total_buyers}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">🏪</div>
+                <div class="kpi-label">Продавцов</div>
+                <div class="kpi-value">${data.total_sellers}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">👤</div>
+                <div class="kpi-label">Новых пользователей</div>
+                <div class="kpi-value">${data.new_users}</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-icon">🎯</div>
+                <div class="kpi-label">Средняя стоимость заказа</div>
+                <div class="kpi-value">${data.total_orders > 0 ? Math.round(data.total_gmv / data.total_orders).toLocaleString('ru-RU') : 0} ₽</div>
+            </div>
+        `;
+        document.getElementById('adminKpiGrid').innerHTML = html;
+    }
+    
+    function renderAdminTopCategories(categories) {
+        if (categories.length === 0) {
+            document.getElementById('adminTopCategories').innerHTML = `
+                <div class="empty-state" style="margin: 0; border-radius: 0;">
+                    <p style="color: var(--text-light);">Нет данных по категориям</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const html = categories.map((c, idx) => `
+            <div class="top-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="top-item-rank">${idx + 1}</div>
+                    <div class="top-item-info">
+                        <div class="top-item-name">${c.name}</div>
+                        <div class="top-item-meta">${c.orders} заказов • ${c.qty} товаров</div>
+                    </div>
+                </div>
+                <div class="top-item-value">${c.orders}</div>
+            </div>
+        `).join('');
+        
+        document.getElementById('adminTopCategories').innerHTML = html;
+    }
+    
+    function renderAdminTopSellers(sellers) {
+        if (sellers.length === 0) {
+            document.getElementById('adminTopSellers').innerHTML = `
+                <div class="empty-state" style="margin: 0; border-radius: 0;">
+                    <p style="color: var(--text-light);">Нет данных по продавцам</p>
+                </div>
+            `;
+            return;
+        }
+        
+        const html = sellers.map((s, idx) => `
+            <div class="top-item">
+                <div style="display: flex; align-items: center; flex: 1;">
+                    <div class="top-item-rank">${idx + 1}</div>
+                    <div class="top-item-info">
+                        <div class="top-item-name">${s.name}</div>
+                        <div class="top-item-meta">${s.orders} заказов</div>
+                    </div>
+                </div>
+                <div class="top-item-value">${Math.round(s.revenue).toLocaleString('ru-RU')} ₽</div>
+            </div>
+        `).join('');
+        
+        document.getElementById('adminTopSellers').innerHTML = html;
+    }
+    
+    function renderAdminStatusDist(statuses) {
+        const statusMap = {
+            'pending': { label: 'Ожидание', badge: 'pending' },
+            'processing': { label: 'В обработке', badge: 'processing' },
+            'completed': { label: 'Завершено', badge: 'completed' },
+            'cancelled': { label: 'Отменено', badge: 'cancelled' }
+        };
+        
+        const html = statuses.map(s => {
+            const config = statusMap[s.status.toLowerCase()] || { label: s.status, badge: 'pending' };
+            return `
+                <div class="status-badge ${config.badge}">
+                    <div class="status-name">${config.label}</div>
+                    <div class="status-count">${s.count}</div>
+                </div>
+            `;
+        }).join('');
+        
+        document.getElementById('adminStatusDist').innerHTML = html || '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Нет заказов</p>';
+    }
+    
+    // Фильтр периода
+    document.getElementById('adminPeriodFilter').addEventListener('click', function(e) {
+        if (e.target.classList.contains('period-btn')) {
+            document.querySelectorAll('#adminPeriodFilter .period-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            e.target.classList.add('active');
+            currentPeriod = e.target.dataset.period;
+            loadAdminAnalytics(currentPeriod);
+        }
+    });
+    
+    // Инициальная загрузка
+    loadAdminAnalytics(currentPeriod);
 });
 </script>
+
 {% endblock %}

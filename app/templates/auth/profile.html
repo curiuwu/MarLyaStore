@@ -77,22 +77,22 @@
             <div class="advantages-grid" style="margin-bottom: 30px;">
                 <div class="advantage-item">
                     <div class="advantage-icon">📦</div>
-                    <h3>3</h3>
+                    <h3>{{ profile_stats.active_orders_count }}</h3>
                     <p>Активных заказов</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">❤️</div>
-                    <h3>{{ user_wishlist_count|default(5) }}</h3>
+                    <h3>{{ profile_stats.wishlist_count }}</h3>
                     <p>В избранном</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">⭐</div>
-                    <h3>4.8</h3>
+                    <h3>{{ "%.1f"|format(profile_stats.rating) }}</h3>
                     <p>Рейтинг</p>
                 </div>
                 <div class="advantage-item">
                     <div class="advantage-icon">🎁</div>
-                    <h3>2</h3>
+                    <h3>{{ profile_stats.bonuses }}</h3>
                     <p>Бонусы</p>
                 </div>
             </div>

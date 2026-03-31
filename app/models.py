@@ -78,6 +78,7 @@ class Valet(db.Model):
 class Order(db.Model):
     __tablename__ = "orders"
     id = db.Column(db.BigInteger, primary_key=True)
+    buyer_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=True)
     status_id = db.Column(db.BigInteger, db.ForeignKey("status.id"), nullable=False)
     valet_id = db.Column(db.BigInteger, db.ForeignKey("valet.id"), nullable=False)
 
