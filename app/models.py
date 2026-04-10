@@ -109,7 +109,7 @@ class Product(db.Model):
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
     category_id = db.Column(db.BigInteger, db.ForeignKey("categories.id"), nullable=False)
-
+    category = db.relationship("Category", backref="products")
 
 class OrderItem(db.Model):
     __tablename__ = "order_items"
@@ -144,7 +144,7 @@ class Review(db.Model):
     comment = db.Column(db.String(255), nullable=False)
     date = db.Column(db.Date, nullable=False)
     rating = db.Column(db.BigInteger, nullable=False)
-
+    user = db.relationship("User", backref="reviews")
 
 class ProductImage(db.Model):
     __tablename__ = "product_images"

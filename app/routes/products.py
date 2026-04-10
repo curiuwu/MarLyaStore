@@ -2,7 +2,7 @@ from flask import Blueprint, render_template, request, abort, redirect, url_for,
 from flask_login import login_required, current_user
 from sqlalchemy import func
 from app import db
-from app.models import Product, Category, Review, ProductImage, User, Valet
+from app.models import Product, Category, Review, ProductImage, User, Valet, OrderItem, Order
 
 products_bp = Blueprint("products", __name__, url_prefix="/products")
 
@@ -105,25 +105,6 @@ def product_detail(product_id):
 def add_review(product_id):
     """Добавление отзыва"""
     product = Product.query.get_or_404(product_id)
-
-    # Проверяем, может ли пользователь оставить отзыв
-    has_purchased = db.session.query(OrderItem).join(Order).filter(
-        Order.buyer_id == current_user.id,
-        OrderItem.items_id == product_id
-    ).first() is not None
-
-    existing_review = Review.query.filter_by(
-        user_id=current_user.id,
-        product_id=product_id
-    ).first()
-
-    if not has_purchased:
-        flash('Вы можете оставить отзыв только на купленный товар.', 'error')
-        return redirect(url_for('products.product_detail', product_id=product_id))
-
-    if existing_review:
-        flash('Вы уже оставили отзыв на этот товар.', 'error')
-        return redirect(url_for('products.product_detail', product_id=product_id))
 
     # Получаем данные из формы
     rating = request.form.get('rating', type=int)

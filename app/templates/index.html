@@ -21,40 +21,30 @@
     </div>
 </header>
 
-<!-- Категории товаров -->
-<section class="categories">
+<!-- Преимущества -->
+<section class="advantages">
     <div class="container">
-        <h2 class="section-title">Популярные категории</h2>
-        <div class="categories-grid">
-            <div class="category-card">
-                <div class="card-icon">👗</div>
-                <h3>Одежда</h3>
-                <p>Модные тренды и классика</p>
+        <h2 class="section-title">Почему выбирают нас</h2>
+        <div class="advantages-grid">
+            <div class="advantage-item">
+                <div class="advantage-icon">⚡</div>
+                <h3>Быстрая доставка</h3>
+                <p>Доставим ваш заказ за 2-3 дня по всей России</p>
             </div>
-            <div class="category-card">
-                <div class="card-icon">📱</div>
-                <h3>Электроника</h3>
-                <p>Гаджеты и девайсы</p>
+            <div class="advantage-item">
+                <div class="advantage-icon">🔒</div>
+                <h3>Безопасность</h3>
+                <p>Защищенные платежи и гарантия качества</p>
             </div>
-            <div class="category-card">
-                <div class="card-icon">🏠</div>
-                <h3>Дом и сад</h3>
-                <p>Товары для комфорта</p>
+            <div class="advantage-item">
+                <div class="advantage-icon">💰</div>
+                <h3>Лучшие цены</h3>
+                <p>Гарантируем самые конкурентные цены на рынке</p>
             </div>
-            <div class="category-card">
-                <div class="card-icon">👟</div>
-                <h3>Обувь</h3>
-                <p>Комфорт и стиль</p>
-            </div>
-            <div class="category-card">
-                <div class="card-icon">💄</div>
-                <h3>Красота</h3>
-                <p>Косметика и уход</p>
-            </div>
-            <div class="category-card">
-                <div class="card-icon">🎮</div>
-                <h3>Развлечения</h3>
-                <p>Игры и хобби</p>
+            <div class="advantage-item">
+                <div class="advantage-icon">🎁</div>
+                <h3>Подарки и бонусы</h3>
+                <p>Получайте бонусы за каждую покупку</p>
             </div>
         </div>
     </div>
@@ -85,34 +75,58 @@
     </div>
 </section>
 
-<!-- Преимущества -->
-<section class="advantages">
+<!-- Категории товаров -->
+<section class="categories">
     <div class="container">
-        <h2 class="section-title">Почему выбирают нас</h2>
-        <div class="advantages-grid">
-            <div class="advantage-item">
-                <div class="advantage-icon">⚡</div>
-                <h3>Быстрая доставка</h3>
-                <p>Доставим ваш заказ за 2-3 дня по всей России</p>
-            </div>
-            <div class="advantage-item">
-                <div class="advantage-icon">🔒</div>
-                <h3>Безопасность</h3>
-                <p>Защищенные платежи и гарантия качества</p>
-            </div>
-            <div class="advantage-item">
-                <div class="advantage-icon">💰</div>
-                <h3>Лучшие цены</h3>
-                <p>Гарантируем самые конкурентные цены на рынке</p>
-            </div>
-            <div class="advantage-item">
-                <div class="advantage-icon">🎁</div>
-                <h3>Подарки и бонусы</h3>
-                <p>Получайте бонусы за каждую покупку</p>
-            </div>
+        <h2 class="section-title">Популярные категории</h2>
+        <div class="categories-grid">
+            <a href="{{ url_for('products.catalog', category=2) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">👗</div>
+                    <h3>{{ get_cat_name(2) }}</h3>
+                    <p>Модные тренды и классика</p>
+                </div>
+            </a>
+            <a href="{{ url_for('products.catalog', category=1) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">📱</div>
+                    <h3>{{ get_cat_name(1) }}</h3>
+                    <p>Гаджеты и девайсы</p>
+                </div>
+            </a>
+            <a href="{{ url_for('products.catalog', category=4) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">🏠</div>
+                    <h3>{{ get_cat_name(4) }}</h3>
+                    <p>Товары для комфорта</p>
+                </div>
+            </a>
+            <a href="{{ url_for('products.catalog', category=3) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">👟</div>
+                    <h3>{{ get_cat_name(3) }}</h3>
+                    <p>Комфорт и стиль</p>
+                </div>
+            </a>
+            <a href="{{ url_for('products.catalog', category=5) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">💄</div>
+                    <h3>{{ get_cat_name(5) }}</h3>
+                    <p>Косметика и уход</p>
+                </div>
+            </a>
+            <a href="{{ url_for('products.catalog', category=6) }}" class="category-card-link">
+                <div class="category-card">
+                    <div class="card-icon">🎮</div>
+                    <h3>{{ get_cat_name(6) }}</h3>
+                    <p>Игры и хобби</p>
+                </div>
+            </a>
         </div>
     </div>
 </section>
+
+
 
 <!-- Новостная рассылка -->
 <section class="newsletter">

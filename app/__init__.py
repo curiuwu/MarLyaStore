@@ -22,6 +22,16 @@ def create_app():
     login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице'
     login_manager.login_message_category = 'info'
     
+    @app.context_processor
+    def utility_processor():
+        from app.models import Category  # Импорт внутри, чтобы избежать ошибок
+        def get_cat_name(cat_id):
+            # Используем session.get, так как query.get считается устаревшим в новых версиях, 
+            # но query.get(cat_id) тоже сработает
+            category = db.session.get(Category, cat_id) 
+            return category.name if category else f"ID {cat_id} не найден"
+        return dict(get_cat_name=get_cat_name)
+
     @login_manager.user_loader
     def load_user(user_id):
         from app.models import User

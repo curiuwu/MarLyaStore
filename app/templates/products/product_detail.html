@@ -77,9 +77,7 @@
             <p>Пока нет отзывов на этот товар.</p>
         </div>
         {% endif %}
-
         <!-- Форма отзыва -->
-        {% if can_review %}
         <div class="review-form-section">
             <h3>Оставить отзыв</h3>
             <form method="POST" action="{{ url_for('products.add_review', product_id=product.id) }}" class="review-form">
@@ -107,20 +105,10 @@
 
                 <button type="submit" class="btn btn-primary">Отправить отзыв</button>
             </form>
-        </div>
-        {% elif current_user.is_authenticated %}
-        <div class="review-info">
-            {% if not has_purchased %}
-            <p>Чтобы оставить отзыв, сначала купите этот товар.</p>
-            {% else %}
-            <p>Вы уже оставили отзыв на этот товар.</p>
-            {% endif %}
-        </div>
-        {% else %}
+        
         <div class="review-info">
             <p><a href="{{ url_for('auth_login.login_page') }}">Войдите</a>, чтобы оставить отзыв.</p>
         </div>
-        {% endif %}
     </div>
 </div>
 {% endblock %}
