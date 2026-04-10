@@ -1,0 +1,253 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление товарами - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+    .product-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 20px;
+    }
+    
+    .product-table thead {
+        background: var(--bg-purple);
+        border-bottom: 2px solid var(--light-purple);
+    }
+    
+    .product-table th {
+        padding: 15px;
+        text-align: left;
+        color: var(--dark-purple);
+        font-weight: 600;
+    }
+    
+    .product-table td {
+        padding: 15px;
+        border-bottom: 1px solid var(--bg-purple);
+    }
+    
+    .product-table tbody tr:hover {
+        background: var(--bg-purple);
+    }
+    
+    .product-name {
+        font-weight: 600;
+        color: var(--dark-purple);
+        max-width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .product-actions {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .btn-small {
+        padding: 6px 12px;
+        font-size: 12px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.2s ease;
+    }
+    
+    .btn-edit {
+        background: #3b82f6;
+        color: white;
+    }
+    
+    .btn-edit:hover {
+        background: #1d4ed8;
+    }
+    
+    .btn-delete {
+        background: #ef4444;
+        color: white;
+    }
+    
+    .btn-delete:hover {
+        background: #dc2626;
+    }
+    
+    .search-form {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+    }
+    
+    .search-form input,
+    .search-form select {
+        padding: 8px 12px;
+        border: 1px solid var(--light-purple);
+        border-radius: 8px;
+        font-size: 14px;
+    }
+    
+    .search-form button {
+        padding: 8px 16px;
+        background: var(--primary-purple);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+    }
+    
+    .search-form button:hover {
+        background: var(--dark-purple);
+    }
+    
+    .pagination {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .pagination a,
+    .pagination span {
+        padding: 8px 12px;
+        border: 1px solid var(--light-purple);
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--primary-purple);
+    }
+    
+    .pagination a:hover {
+        background: var(--bg-purple);
+    }
+    
+    .pagination .active {
+        background: var(--primary-purple);
+        color: white;
+        border-color: var(--primary-purple);
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-light);
+    }
+    
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 20px;
+    }
+</style>
+
+<div class="admin-header">
+    <h1>📦 Управление товарами</h1>
+    <div class="admin-header-actions">
+        <a href="{{ url_for('admin.product_create') }}" class="btn btn-primary">
+            ➕ Создать товар
+        </a>
+    </div>
+</div>
+
+<!-- Форма поиска и фильтрации -->
+<form method="get" class="search-form" action="{{ url_for('admin.products_list') }}">
+    <input type="text" name="search" placeholder="🔍 Поиск по названию..." value="{{ search }}">
+    <select name="category">
+        <option value="0">Все категории</option>
+        {% for cat in categories %}
+            <option value="{{ cat.id }}" {% if cat.id == category_id %}selected{% endif %}>
+                {{ cat.name }}
+            </option>
+        {% endfor %}
+    </select>
+    <button type="submit">Найти</button>
+</form>
+
+{% if products.items %}
+    <!-- Таблица товаров -->
+    <div style="overflow-x: auto;">
+        <table class="product-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Название</th>
+                    <th>Категория</th>
+                    <th>Описание</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products.items %}
+                    <tr>
+                        <td>#{{ product.id }}</td>
+                        <td class="product-name">{{ product.name }}</td>
+                        <td>{{ product.category.name if product.category else 'N/A' }}</td>
+                        <td style="max-width: 300px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-light);">
+                            {{ product.description[:50] }}...
+                        </td>
+                        <td>
+                            <div class="product-actions">
+                                <a href="{{ url_for('admin.product_edit', product_id=product.id) }}" class="btn-small btn-edit">
+                                    ✏️ Редак
+                                </a>
+                                <a href="{{ url_for('admin.product_delete', product_id=product.id) }}" class="btn-small btn-delete">
+                                    🗑️ Удалить
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Пагинация -->
+    {% if products.pages > 1 %}
+        <div class="pagination">
+            {% if products.has_prev %}
+                <a href="{{ url_for('admin.products_list', page=products.prev_num, search=search, category=category_id) }}">
+                    ← Назад
+                </a>
+            {% endif %}
+            
+            {% for page_num in products.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == products.page %}
+                        <span class="active">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('admin.products_list', page=page_num, search=search, category=category_id) }}">
+                            {{ page_num }}
+                        </a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+                <a href="{{ url_for('admin.products_list', page=products.next_num, search=search, category=category_id) }}">
+                    Далее →
+                </a>
+            {% endif %}
+        </div>
+    {% endif %}
+    
+    <p style="text-align: center; color: var(--text-light); margin-top: 20px;">
+        Всего товаров: {{ products.total }}
+    </p>
+{% else %}
+    <!-- Пустое состояние -->
+    <div class="empty-state">
+        <div class="empty-state-icon">📭</div>
+        <h3>Товары не найдены</h3>
+        <p>
+            {% if search or category_id %}
+                Попробуйте изменить параметры поиска
+            {% else %}
+                Давайте создадим первый товар!
+            {% endif %}
+        </p>
+        <a href="{{ url_for('admin.product_create') }}" class="btn btn-primary" style="margin-top: 15px;">
+            ➕ Создать первый товар
+        </a>
+    </div>
+{% endif %}
+{% endblock %}

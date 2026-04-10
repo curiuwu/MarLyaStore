@@ -1,0 +1,125 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Редактирование товара - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+    .form-group {
+        margin-bottom: 20px;
+    }
+    
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        color: var(--dark-purple);
+        font-weight: 600;
+    }
+    
+    .form-group input,
+    .form-group textarea,
+    .form-group select {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid var(--light-purple);
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+    }
+    
+    .form-group textarea {
+        resize: vertical;
+        min-height: 120px;
+    }
+    
+    .form-group input:focus,
+    .form-group textarea:focus,
+    .form-group select:focus {
+        outline: none;
+        border-color: var(--primary-purple);
+        box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+    }
+    
+    .form-group small {
+        display: block;
+        margin-top: 4px;
+        color: var(--text-light);
+        font-size: 12px;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 30px;
+    }
+    
+    .form-card {
+        background: var(--bg-purple);
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 600px;
+    }
+    
+    .product-info {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        border-left: 4px solid var(--primary-purple);
+    }
+    
+    .product-info p {
+        margin: 5px 0;
+        color: var(--text-dark);
+    }
+    
+    .product-info strong {
+        color: var(--dark-purple);
+    }
+</style>
+
+<div class="admin-header">
+    <h1>✏️ Редактирование товара</h1>
+</div>
+
+<div class="form-card">
+    <!-- Информация о товаре -->
+    <div class="product-info">
+        <p><strong>ID товара:</strong> #{{ product.id }}</p>
+        <p><strong>Создан:</strong> {{ product.id }}</p>
+    </div>
+    
+    <form method="POST" action="{{ url_for('admin.product_edit', product_id=product.id) }}">
+        <div class="form-group">
+            <label for="name">Название товара <span style="color: #ef4444;">*</span></label>
+            <input type="text" id="name" name="name" required value="{{ product.name }}">
+            <small>Минимум 3 символа</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="description">Описание <span style="color: #ef4444;">*</span></label>
+            <textarea id="description" name="description" required>{{ product.description }}</textarea>
+            <small>Минимум 10 символов</small>
+        </div>
+        
+        <div class="form-group">
+            <label for="category_id">Категория <span style="color: #ef4444;">*</span></label>
+            <select id="category_id" name="category_id" required>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if category.id == product.category_id %}selected{% endif %}>
+                        {{ category.name }}
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">
+                ✅ Сохранить изменения
+            </button>
+            <a href="{{ url_for('admin.products_list') }}" class="btn btn-secondary">
+                ❌ Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

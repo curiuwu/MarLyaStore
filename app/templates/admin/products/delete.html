@@ -1,0 +1,111 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Удаление товара - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+    .delete-card {
+        background: #fee2e2;
+        border-left: 4px solid #ef4444;
+        padding: 20px;
+        border-radius: 12px;
+        max-width: 500px;
+    }
+    
+    .delete-card h2 {
+        color: #991b1b;
+        margin-top: 0;
+    }
+    
+    .product-preview {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border: 1px solid #fecaca;
+    }
+    
+    .product-preview p {
+        margin: 8px 0;
+        color: var(--text-dark);
+    }
+    
+    .product-preview strong {
+        color: var(--dark-purple);
+    }
+    
+    .delete-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .btn-confirm-delete {
+        background: #ef4444;
+        color: white;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 16px;
+    }
+    
+    .btn-confirm-delete:hover {
+        background: #dc2626;
+    }
+    
+    .btn-cancel {
+        background: var(--bg-purple);
+        color: var(--primary-purple);
+        padding: 10px 20px;
+        border: 1px solid var(--light-purple);
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 16px;
+        display: inline-block;
+    }
+    
+    .btn-cancel:hover {
+        background: var(--light-purple);
+    }
+    
+    .warning-box {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        color: #92400e;
+    }
+</style>
+
+<div class="admin-header">
+    <h1>⚠️ Удаление товара</h1>
+</div>
+
+<div class="delete-card">
+    <h2>Вы уверены?</h2>
+    
+    <div class="product-preview">
+        <p><strong>Товар:</strong> {{ product.name }}</p>
+        <p><strong>Категория:</strong> {{ product.category.name if product.category else 'N/A' }}</p>
+        <p><strong>Описание:</strong> {{ product.description[:100] }}...</p>
+    </div>
+    
+    <div class="warning-box">
+        ⚠️ <strong>Внимание!</strong> Это действие не может быть отменено. Товар будет удалён из базы данных вместе со всеми связанными данными (изображения, отзывы, скидки и т.д.).
+    </div>
+    
+    <form method="POST" action="{{ url_for('admin.product_delete', product_id=product.id) }}" style="display: inline;">
+        <div class="delete-actions">
+            <button type="submit" class="btn-confirm-delete">
+                🗑️ Удалить товар
+            </button>
+            <a href="{{ url_for('admin.products_list') }}" class="btn-cancel">
+                ❌ Отмена
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

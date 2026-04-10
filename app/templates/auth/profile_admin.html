@@ -32,34 +32,44 @@
             </div>
 
             <ul class="profile-menu">
+                <li>
+                    <a href="{{ url_for('admin.dashboard') }}">
+                        <span>👑</span> Админ-панель
+                    </a>
+                </li>
                 <li class="active">
                     <a href="{{ url_for('auth_profile.profile') }}">
                         <span>📊</span> Обзор системы
                     </a>
                 </li>
                 <li>
-                    <a href="#">
-                        <span>👥</span> Управление пользователями
+                    <a href="{{ url_for('admin.products_list') }}">
+                        <span>📦</span> Управление товарами
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span>🏪</span> Магазины продавцов
+                        <span>👥</span> Управление пользователями (скоро)
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span>📦</span> Все заказы
+                        <span>🏪</span> Магазины продавцов (скоро)
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span>🚫</span> Модерация
+                        <span>📋</span> Все заказы (скоро)
                     </a>
                 </li>
                 <li>
                     <a href="#">
-                        <span>📈</span> Аналитика
+                        <span>🚫</span> Модерация (скоро)
+                    </a>
+                </li>
+                <li>
+                    <a href="#">
+                        <span>📈</span> Аналитика (скоро)
                     </a>
                 </li>
                 <li>
