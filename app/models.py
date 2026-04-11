@@ -141,7 +141,7 @@ class Review(db.Model):
     user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
     product_id = db.Column(db.BigInteger, db.ForeignKey("products.id"), nullable=False)
     title = db.Column(db.String(255), nullable=False)
-    comment = db.Column(db.String(255), nullable=False)
+    comment = db.Column(db.Text, nullable=False)
     date = db.Column(db.Date, nullable=False)
     rating = db.Column(db.BigInteger, nullable=False)
     user = db.relationship("User", backref="reviews")

@@ -557,7 +557,7 @@ body {
 }
 
 .newsletter-form input:focus {
-    outline: none;
+    outline: none !important;
     box-shadow: 0 0 0 3px rgba(255,255,255,0.3);
 }
 
@@ -685,17 +685,20 @@ body {
 .filter-group select {
     padding: 10px 15px;
     border: 2px solid var(--light-purple);
-    border-radius: 8px;
+    border-radius: 8px; /* Изначально все скруглены на 8px */
     font-size: 1rem;
-    transition: border-color 0.3s ease;
+    /* Плавный переход для цвета и для всех углов сразу */
+    transition: border-color 0.3s ease, border-radius 0.3s ease; 
 }
 
 .filter-group input:focus,
 .filter-group select:focus {
-    outline: none;
+    outline: none !important;
     border-color: var(--primary-purple);
+    
+    /* При нажатии ВСЕ углы становятся острыми */
+    border-radius: 0 !important; 
 }
-
 .products-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
@@ -1003,7 +1006,7 @@ body {
 .form-group input:focus,
 .form-group select:focus,
 .form-group textarea:focus {
-    outline: none;
+    outline: none !important;
     border-color: var(--primary-purple);
 }
 
@@ -2361,4 +2364,30 @@ select.form-control:focus {
     .analytics-table {
         overflow-x: auto;
     }
+}
+/* 1. Убираем всё лишнее при клике (Focus) */
+.filter-group select:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    /* У некоторых браузеров есть свое специфичное свойство для этой рамки */
+    outline-offset: 0 !important;
+}
+
+/* 2. Тот самый "другой" элемент: Chrome и Edge часто рисуют рамку именно здесь */
+.filter-group select:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+}
+
+/* 3. Магия для Chromium браузеров (если рамка все еще там) */
+.filter-group select::-ms-value {
+    background: none; /* Убирает системный фон в старых Edge */
+    color: inherit;
+}
+
+/* 4. Принудительно задаем границы, чтобы браузер не подставлял свои */
+.filter-group select {
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
 }
