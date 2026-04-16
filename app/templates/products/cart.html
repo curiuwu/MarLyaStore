@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block title %}Корзина - MarLya Store{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="cart-header mb-4">
+        <h2 class="display-6 fw-bold"><span class="purple-text">🛒</span> Ваша корзина</h2>
+    </div>
+
+    <div class="cart-grid">
+        {% if items %}
+            <div class="cart-items-list">
+                {% for item in items %}
+                <div class="cart-item-card">
+                    <div class="cart-item-info">
+                        <h5 class="cart-item-title">{{ item.product.name }}</h5>
+                        <div class="cart-item-details">
+                            <span class="price-tag">{{ "{:,.0f}".format(item.product.price).replace(',', ' ') }} ₽</span>
+                            <span class="quantity-badge">x {{ item.quantity }}</span>
+                        </div>
+                    </div>
+                    
+                    <div class="cart-item-subtotal text-end">
+                        <p class="mb-1 text-muted">Итого</p>
+                        <p class="fw-bold purple-text">{{ "{:,.0f}".format(item.product.price * item.quantity).replace(',', ' ') }} ₽</p>
+                        <a href="{{ url_for('products.remove_from_cart', item_id=item.id) }}" class="remove-btn">
+                            <i class="fas fa-trash"></i> Удалить
+                        </a>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+            <div class="cart-summary-card">
+                <div class="summary-content">
+                    <h4 class="mb-4">Детали заказа</h4>
+                    <div class="summary-line">
+                        <span>Сумма покупок:</span>
+                        <span class="fw-bold">{{ "{:,.0f}".format(total_price).replace(',', ' ') }} ₽</span>
+                    </div>
+                    <div class="summary-line">
+                        <span>Ваш баланс:</span>
+                        <span class="balance-amount">{{ "{:,.0f}".format(current_user.valet.balance if current_user.valet else 0).replace(',', ' ') }} ₽</span>
+                    </div>
+                    
+                    <hr class="my-4">
+                    
+                    <div class="total-line mb-4">
+                        <span class="total-label">К оплате:</span>
+                        <span class="total-amount">{{ "{:,.0f}".format(total_price).replace(',', ' ') }} ₽</span>
+                    </div>
+
+                    <form action="{{ url_for('products.checkout') }}" method="POST">
+                        <button type="submit" class="btn-checkout">
+                            💰 Подтвердить и оплатить
+                        </button>
+                    </form>
+                </div>
+            </div>
+        {% else %}
+            <div class="empty-cart-state text-center py-5">
+                <div class="empty-cart-icon">🛒</div>
+                <h3 class="mb-3">Корзина пуста</h3>
+                <p class="text-muted mb-4">Кажется, вы еще ничего не выбрали.</p>
+                <a href="{{ url_for('products.catalog') }}" class="btn-add-cart" style="text-decoration: none; display: inline-block; width: auto;">
+                    Вернуться к покупкам
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

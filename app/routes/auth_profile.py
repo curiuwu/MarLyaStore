@@ -1,7 +1,9 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, redirect, url_for, flash
 from flask_login import login_required, current_user
 from app.services.analytics import AnalyticsService
-
+from app.models import Order
+from app import db
+from decimal import Decimal
 auth_profile_bp = Blueprint("auth_profile", __name__, url_prefix="/auth")
 
 @auth_profile_bp.route("/profile")
@@ -25,11 +27,6 @@ def profile():
     else:  # user/customer
         return render_template("auth/profile_customer.html", user=current_user, profile_stats=profile_stats)
 
-@auth_profile_bp.route("/profile/orders")
-@login_required
-def profile_orders():
-    """Страница с заказами пользователя"""
-    return render_template("auth/profile_orders.html", user=current_user)
 
 @auth_profile_bp.route("/profile/wishlist")
 @login_required
@@ -97,6 +94,23 @@ def api_admin_stats():
     
     return jsonify(stats)
 
+@auth_profile_bp.route('/dupe-balance', methods=['POST'])
+@login_required
+def dupe_balance():
+    try:
+        if current_user.valet:
+            # Преобразуем к Decimal, так как в базе Numeric
+            current_user.valet.balance = Decimal(str(current_user.valet.balance)) + Decimal('50000.00')
+            db.session.commit()
+            flash('Баланс пополнен! ✨', 'success')
+        else:
+            flash('Кошелек не найден', 'danger')
+    except Exception as e:
+        db.session.rollback() # Откатываем, если что-то пошло не так
+        print(f"Ошибка дюпа: {e}")
+        flash('Ошибка при записи в базу', 'danger')
+        
+    return redirect(request.referrer or url_for('auth_profile.profile'))
 
 @auth_profile_bp.route("/api/buyer/stats", methods=["GET"])
 @login_required
@@ -117,3 +131,10 @@ def api_buyer_stats():
     }
     
     return jsonify(stats)
+
+@auth_profile_bp.route('/profile/orders')
+@login_required
+def profile_orders():
+    """История заказов пользователя"""
+    orders = Order.query.filter_by(buyer_id=current_user.id).order_by(Order.date.desc()).all()
+    return render_template('auth/profile_orders.html', orders=orders)

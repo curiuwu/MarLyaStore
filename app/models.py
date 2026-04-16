@@ -9,16 +9,14 @@ class Role(db.Model):
 
 
 class User(db.Model):
-    __tablename__ = "Users"
+    __tablename__ = "users"
     id = db.Column(db.BigInteger, primary_key=True)
     role_id = db.Column(db.BigInteger, db.ForeignKey("roles.id"), nullable=False, default=1)
     
-    # Существующие поля
     name = db.Column(db.String(255), nullable=False)
     second_name = db.Column(db.String(255), nullable=False)
     age = db.Column(db.BigInteger, nullable=False)
     
-    # НОВЫЕ поля
     email = db.Column(db.String(255), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -26,7 +24,7 @@ class User(db.Model):
     is_active = db.Column(db.Boolean, default=True)
     
     role = db.relationship("Role", backref="users")
-    
+    valet = db.relationship('Valet', backref='owner', uselist=False)
     def set_password(self, password):
         from werkzeug.security import generate_password_hash
         self.password_hash = generate_password_hash(password)
@@ -58,12 +56,12 @@ class Address(db.Model):
 class UserAddress(db.Model):
     __tablename__ = "user_adress"
     id = db.Column(db.BigInteger, primary_key=True)
-    user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=False)
     adress_id = db.Column(db.BigInteger, db.ForeignKey("adresses.id"), nullable=False)
 
 
 class Currency(db.Model):
-    __tablename__ = "Currency"
+    __tablename__ = "currency"
     id = db.Column(db.BigInteger, primary_key=True)
     currency_name = db.Column(db.String(255), nullable=False)
 
@@ -71,16 +69,18 @@ class Currency(db.Model):
 class Valet(db.Model):
     __tablename__ = "valet"
     id = db.Column(db.BigInteger, primary_key=True)
-    user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
-    currency_id = db.Column(db.BigInteger, db.ForeignKey("Currency.id"), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=False)
+    currency_id = db.Column(db.BigInteger, db.ForeignKey("currency.id"), nullable=False)
+    balance = db.Column(db.Numeric(10, 2), default=0) # ДОБАВЛЕНО: для хранения денег
 
 
 class Order(db.Model):
     __tablename__ = "orders"
     id = db.Column(db.BigInteger, primary_key=True)
-    buyer_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=True)
+    buyer_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=True)
     status_id = db.Column(db.BigInteger, db.ForeignKey("status.id"), nullable=False)
     valet_id = db.Column(db.BigInteger, db.ForeignKey("valet.id"), nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow) # ДОБАВЛЕНО: дата заказа
 
 
 class Status(db.Model):
@@ -108,6 +108,7 @@ class Product(db.Model):
     id = db.Column(db.BigInteger, primary_key=True)
     name = db.Column(db.String(255), nullable=False)
     description = db.Column(db.Text, nullable=False)
+    price = db.Column(db.Numeric(10, 2), nullable=False) # ДОБАВЛЕНО: цена товара
     category_id = db.Column(db.BigInteger, db.ForeignKey("categories.id"), nullable=False)
     category = db.relationship("Category", backref="products")
 
@@ -116,33 +117,38 @@ class OrderItem(db.Model):
     id = db.Column(db.BigInteger, primary_key=True)
     items_id = db.Column(db.BigInteger, db.ForeignKey("products.id"), nullable=False)
     order_id = db.Column(db.BigInteger, db.ForeignKey("orders.id"), nullable=False)
-    price_at_purchase = db.Column(db.BigInteger, nullable=False)
+    price_at_purchase = db.Column(db.Numeric(10, 2), nullable=False) # Исправлен тип на Numeric
     quantity = db.Column(db.BigInteger, nullable=False)
+    
+    product = db.relationship("Product") # ДОБАВЛЕНО: связь для получения имени товара
+    order_ref = db.relationship("Order", backref="order_items") # ДОБАВЛЕНО: связь с заказом
 
 
 class Wishlist(db.Model):
     __tablename__ = "wishlist"
     id = db.Column(db.BigInteger, primary_key=True)
     product_id = db.Column(db.BigInteger, db.ForeignKey("products.id"), nullable=False)
-    user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=False)
 
 
 class Cart(db.Model):
     __tablename__ = "cart"
     id = db.Column(db.BigInteger, primary_key=True)
-    user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=False)
     product_id = db.Column(db.BigInteger, db.ForeignKey("products.id"), nullable=False)
     quantity = db.Column(db.BigInteger, nullable=False)
+    
+    product = db.relationship("Product") # ДОБАВЛЕНО: чтобы видеть товар в корзине
 
 
 class Review(db.Model):
     __tablename__ = "rewievs"
     id = db.Column(db.BigInteger, primary_key=True)
-    user_id = db.Column(db.BigInteger, db.ForeignKey("Users.id"), nullable=False)
+    user_id = db.Column(db.BigInteger, db.ForeignKey("users.id"), nullable=False)
     product_id = db.Column(db.BigInteger, db.ForeignKey("products.id"), nullable=False)
     title = db.Column(db.String(255), nullable=False)
     comment = db.Column(db.Text, nullable=False)
-    date = db.Column(db.Date, nullable=False)
+    date = db.Column(db.DateTime, default=datetime.utcnow) # Исправлено на DateTime для гибкости
     rating = db.Column(db.BigInteger, nullable=False)
     user = db.relationship("User", backref="reviews")
 

@@ -1,17 +1,68 @@
 {% extends "base.html" %}
 
-{% block title %}В разработке | MarLya Store{% endblock %}
+{% block title %}Мои заказы | MarLya Store{% endblock %}
 
 {% block content %}
-<div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; text-align: center;">
-    <div class="development-placeholder">
-        <h1 style="color: var(--dark-purple); font-size: 2.5rem; margin-bottom: 20px;">
-            📍 Раздел находится в разработке
-        </h1>
-        <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 30px;">
-            Мы уже работаем над тем, чтобы этот функционал стал доступен.
-        </p>
-        <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-primary btn-lg" style="border-radius: 25px; padding: 10px 30px;">
+<div class="orders-container">
+    <h2 class="fw-black mb-5"><span class="purple-brand">История</span> моих заказов</h2>
+
+    {% if orders %}
+        {% for order in orders %}
+        <div class="order-item-card">
+            <div class="order-meta-header">
+                <div>
+                    <span class="order-info-label">ID заказа</span>
+                    <div class="order-number">#{{ order.id }}</div>
+                </div>
+                <div class="text-end">
+                    <span class="order-info-label">Дата оформления</span>
+                    <div class="fw-bold text-dark">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</div>
+                </div>
+            </div>
+
+            <div class="order-grid-header">
+                <div class="col-name grid-label">Товар</div>
+                <div class="col-qty grid-label">Кол-во</div>
+                <div class="col-prc grid-label">Цена</div>
+            </div>
+
+            {% for item in order.order_items %}
+            <div class="order-grid-row">
+                <div class="col-name item-name">{{ item.product.name }}</div>
+                <div class="col-qty">
+                    <span class="qty-badge">{{ item.quantity }}</span>
+                </div>
+                <div class="col-prc price-val">
+                    {{ "{:,.0f}".format(item.product.price).replace(',', ' ') }} ₽
+                </div>
+            </div>
+            {% endfor %}
+
+            <div class="order-footer-tools">
+                <div class="status-tag">
+                    <i class="fas fa-check-circle me-1"></i> Оплачено (баланс)
+                </div>
+                <div class="total-summary">
+                    <span class="total-txt">Сумма заказа:</span>
+                    <span class="total-amount">
+                        {% set total_order = [] %}
+                        {% for item in order.order_items %}
+                            {% set _ = total_order.append(item.product.price * item.quantity) %}
+                        {% endfor %}
+                        {{ "{:,.0f}".format(total_order | sum).replace(',', ' ') }} ₽
+                    </span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="text-center py-5">
+            <h4 class="text-muted">Заказов пока не было...</h4>
+        </div>
+    {% endif %}
+
+    <div class="text-start mt-4">
+        <a href="{{ url_for('auth_profile.profile') }}" class="back-link-btn">
             Вернуться в профиль
         </a>
     </div>

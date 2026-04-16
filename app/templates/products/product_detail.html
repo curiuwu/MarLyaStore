@@ -20,13 +20,17 @@
         <div class="product-info-detail">
             <h1 class="product-title-detail">{{ product.name }}</h1>
 
-            <!-- Рейтинг -->
             <div class="product-rating-detail">
                 {% for i in range(1, 6) %}
                 <span class="star {% if i <= avg_rating %}filled{% endif %}">★</span>
                 {% endfor %}
                 <span class="rating-text">({{ "%.1f"|format(avg_rating) }})</span>
                 <span class="review-count">{{ review_count }} отзывов</span>
+            </div>
+
+            <div class="product-price-section">
+                <span class="price-value">{{ "{:,.0f}".format(product.price).replace(',', ' ') }}</span>
+                <span class="price-currency">₽</span>
             </div>
 
             <div class="product-description-full">
@@ -38,12 +42,19 @@
                 <div class="detail-item">
                     <strong>Категория:</strong> {{ product.category.name }}
                 </div>
+                
+                <form action="{{ url_for('products.add_to_cart', product_id=product.id) }}" method="POST" class="add-to-cart-form">
+                    <div class="quantity-control">
+                        <label for="quantity">Количество:</label>
+                        <input type="number" id="quantity" name="quantity" value="1" min="1" max="99" oninput="calculateTotal()">
+                    </div>
 
-                {% if seller %}
-                <div class="detail-item">
-                    <strong>Продавец:</strong> {{ seller.name }} {{ seller.second_name }}
-                </div>
-                {% endif %}
+                    <div class="total-price-preview">
+                        Итого: <span id="total-val">{{ "{:,.0f}".format(product.price).replace(',', ' ') }}</span> ₽
+                    </div>
+
+                    <button type="submit" class="btn-add-cart">Добавить в корзину</button>
+                </form>
             </div>
         </div>
     </div>
@@ -111,4 +122,30 @@
         </div>
     </div>
 </div>
-{% endblock %}
+
+<script>
+function calculateTotal() {
+    // Получаем цену. Используем замену запятой на точку, если вдруг локаль Python выдаст 120,00
+    let priceStr = "{{ product.price }}".replace(',', '.');
+    let currentPrice = parseFloat(priceStr);
+    let currentQty = parseInt(document.getElementById('quantity').value);
+    
+    if (isNaN(currentPrice) || isNaN(currentQty)) return;
+
+    let totalSum = currentPrice * currentQty;
+    
+    const totalDisplay = document.getElementById('total-val');
+    if (totalDisplay) {
+        // Форматируем с пробелами: 120 000
+        totalDisplay.innerText = totalSum.toLocaleString('ru-RU', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
+    }
+}
+
+// Слушаем событие загрузки
+document.addEventListener('DOMContentLoaded', calculateTotal);
+</script>
+
+{% endblock %} ```

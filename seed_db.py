@@ -8,8 +8,9 @@ from app.models import (
     OrderStatus, Category, Product, OrderItem, Wishlist, Cart, Review,
     ProductImage, Discount
 )
-from datetime import datetime, date
+from datetime import datetime
 import random
+from decimal import Decimal
 
 def seed_database():
     app = create_app()
@@ -17,231 +18,148 @@ def seed_database():
     with app.app_context():
         print("🌱 Начинаем заполнение базы демонстрационными данными...")
 
-        # Проверяем, есть ли уже данные
-        if Product.query.first():
-            print("⚠️  База данных уже содержит товары. Пропускаем заполнение.")
-            return
+        # 1. Роли (Сначала роли, так как User на них ссылается)
+        if not Role.query.first():
+            print("--- Создаем роли...")
+            db.session.add_all([
+                Role(id=1, role_name="User"),
+                Role(id=2, role_name="Seller"),
+                Role(id=3, role_name="Admin")
+            ])
+            db.session.commit()
 
-        # Создаем валюту
-        if not Currency.query.first():
+        # 2. Валюта
+        ruble = Currency.query.filter_by(currency_name="RUB").first()
+        if not ruble:
+            print("--- Создаем валюту...")
             ruble = Currency(currency_name="RUB")
             db.session.add(ruble)
             db.session.commit()
-            print("✓ Валюта создана")
 
-        if not Role.query.first():
-            user_role = Role(id=1, role_name="User")
-            seller_role = Role(id=2, role_name="Seller")
-            admin_role = Role(id=3, role_name="Admin")
-            db.session.add_all([user_role, seller_role, admin_role])
+        # 3. Статусы
+        if not Status.query.first():
+            print("--- Создаем статусы...")
+            statuses_names = ["Оформлен", "Подтвержден", "В пути", "Доставлен", "Отменен"]
+            for idx, s_name in enumerate(statuses_names, 1):
+                db.session.add(Status(id=idx, name=s_name))
             db.session.commit()
-            print("✓ Роли созданы")
-            
-        # Создаем статусы заказов
-        statuses = ["Оформлен", "Подтвержден", "В пути", "Доставлен", "Отменен"]
-        for status_name in statuses:
-            if not Status.query.filter_by(name=status_name).first():
-                status = Status(name=status_name)
-                db.session.add(status)
-        db.session.commit()
-        print("✓ Статусы заказов созданы")
 
-        # Создаем категории
-        categories_data = [
-            "Электроника", "Одежда", "Обувь", "Дом и сад", "Косметика",
-            "Спорт", "Книги", "Игрушки", "Автотовары", "Здоровье"
-        ]
-        categories = []
-        for cat_name in categories_data:
-            category = Category(name=cat_name)
-            db.session.add(category)
-            categories.append(category)
-        db.session.commit()
-        print("✓ Категории созданы")
+        # 4. Категории
+        if not Category.query.first():
+            print("--- Создаем категории...")
+            categories_data = ["Электроника", "Одежда", "Обувь", "Дом и сад", "Косметика"]
+            for idx, cat_name in enumerate(categories_data, 1):
+                db.session.add(Category(id=idx, name=cat_name))
+            db.session.commit()
 
-        # Создаем продавцов
-        sellers = []
-        seller_names = [
-            ("Иван", "Петров"), ("Мария", "Сидорова"), ("Алексей", "Кузнецов"),
-            ("Елена", "Васильева"), ("Дмитрий", "Морозов")
-        ]
+        # Получаем актуальные категории из базы для ссылок
+        db_categories = Category.query.all()
 
-        for first_name, last_name in seller_names:
-            # Создаем пользователя
-            user = User(
-                role_id=2,  # seller
-                name=first_name,
-                second_name=last_name,
-                age=random.randint(25, 50),
-                email=f"{first_name.lower()}.{last_name.lower()}@marlya.com",
-                created_at=datetime.utcnow(),
-                is_active=True
-            )
-            user.set_password("password123")
-            db.session.add(user)
-            db.session.flush()  # Получаем ID
-
-            # Создаем валет для продавца
-            valet = Valet(user_id=user.id, currency_id=1)
-            db.session.add(valet)
-            sellers.append((user, valet))
-
-        db.session.commit()
-        print("✓ Продавцы созданы")
-
-        # Создаем товары
-        products_data = [
-            # Электроника
-            ("iPhone 15 Pro", "Флагманский смартфон Apple с продвинутой камерой", 120000, 0),
-            ("Samsung Galaxy S24", "Мощный Android-смартфон с AMOLED дисплеем", 90000, 0),
-            ("MacBook Air M3", "Легкий ноутбук Apple с чипом M3", 150000, 0),
-            ("Sony WH-1000XM5", "Беспроводные наушники с активным шумоподавлением", 35000, 0),
-
-            # Одежда
-            ("Куртка зимняя", "Теплая зимняя куртка с натуральным мехом", 25000, 1),
-            ("Джинсы Levi's", "Классические джинсы от Levi's 501", 8000, 1),
-            ("Платье вечернее", "Элегантное платье для особых случаев", 15000, 1),
-            ("Футболка хлопковая", "Удобная хлопковая футболка на каждый день", 2000, 1),
-
-            # Обувь
-            ("Кроссовки Nike Air", "Спортивные кроссовки с амортизацией", 12000, 2),
-            ("Ботинки зимние", "Утепленные ботинки для холодной погоды", 8000, 2),
-            ("Туфли классические", "Черные кожаные туфли для деловых встреч", 15000, 2),
-
-            # Дом и сад
-            ("Кофемашина", "Автоматическая кофемашина с капучинатором", 45000, 3),
-            ("Пылесос робот", "Робот-пылесос с навигацией", 35000, 3),
-            ("Набор посуды", "Комплект кухонной посуды из нержавеющей стали", 12000, 3),
-
-            # Косметика
-            ("Крем для лица", "Увлажняющий крем с гиалуроновой кислотой", 1500, 4),
-            ("Тушь для ресниц", "Водостойкая тушь объемного эффекта", 800, 4),
-            ("Парфюм Chanel", "Классический аромат Chanel №5", 25000, 4),
-        ]
-
-        products = []
-        for name, desc, price, cat_idx in products_data:
-            seller_idx = random.randint(0, len(sellers) - 1)
-            seller_user, seller_valet = sellers[seller_idx]
-
-            product = Product(
-                name=name,
-                description=desc,
-                category_id=categories[cat_idx].id
-            )
-            db.session.add(product)
-            products.append((product, seller_valet, price))
-
-        db.session.commit()
-        print("✓ Товары созданы")
-
-        # Создаем изображения для товаров (placeholders)
-        image_urls = [
-            "https://via.placeholder.com/400x400/FF6B9D/FFFFFF?text=Product+Image",
-            "https://via.placeholder.com/400x400/4ECDC4/FFFFFF?text=No+Image",
-            "https://via.placeholder.com/400x400/45B7D1/FFFFFF?text=Placeholder"
-        ]
-
-        for product, _, _ in products:
-            # Добавляем 1-2 изображения на товар
-            num_images = random.randint(1, 2)
-            for _ in range(num_images):
-                image = ProductImage(
-                    product_id=product.id,
-                    url=random.choice(image_urls)
+        # 5. Продавцы
+        if not User.query.filter_by(role_id=2).first():
+            print("--- Создаем продавцов...")
+            seller_names = [("Иван", "Петров"), ("Мария", "Сидорова")]
+            for f_name, l_name in seller_names:
+                user = User(
+                    role_id=2,
+                    name=f_name, second_name=l_name,
+                    age=random.randint(25, 50),
+                    email=f"{f_name.lower()}.{l_name.lower()}@marlya.com",
+                    is_active=True
                 )
-                db.session.add(image)
+                user.set_password("password123")
+                db.session.add(user)
+                db.session.flush()
+                
+                # Создаем кошелек продавцу
+                db.session.add(Valet(user_id=user.id, currency_id=ruble.id, balance=Decimal('0.00')))
+            db.session.commit()
 
-        db.session.commit()
-        print("✓ Изображения товаров добавлены")
+        # 6. Товары
+        if not Product.query.first():
+            print("--- Создаем товары...")
+            products_info = [
+                ("iPhone 15 Pro", "Флагманский смартфон Apple", 120000, 0),
+                ("Samsung Galaxy S24", "Мощный Android-смартфон", 90000, 0),
+                ("MacBook Air M3", "Легкий ноутбук Apple", 150000, 0),
+                ("Sony WH-1000XM5", "Беспроводные наушники", 35000, 0),
+                ("Куртка зимняя", "Теплая куртка", 25000, 1),
+                ("Джинсы Levi's", "Классические джинсы", 8000, 1),
+                ("Кроссовки Nike Air", "Спортивные кроссовки", 12000, 2),
+                ("Кофемашина", "Автоматическая кофемашина", 45000, 3)
+            ]
 
-        # Создаем покупателей
-        buyers = []
-        buyer_names = [
-            ("Анна", "Иванова"), ("Сергей", "Смирнов"), ("Ольга", "Попова"),
-            ("Андрей", "Волков"), ("Наталья", "Соколова")
-        ]
+            for name, desc, price, cat_idx in products_info:
+                product = Product(
+                    name=name,
+                    description=desc,
+                    price=Decimal(str(price)),
+                    category_id=db_categories[cat_idx].id
+                )
+                db.session.add(product)
+            db.session.commit()
 
-        for first_name, last_name in buyer_names:
-            user = User(
-                role_id=1,  # user
-                name=first_name,
-                second_name=last_name,
-                age=random.randint(18, 65),
-                email=f"{first_name.lower()}.{last_name.lower()}@example.com",
-                created_at=datetime.utcnow(),
-                is_active=True
-            )
-            user.set_password("password123")
-            db.session.add(user)
-            buyers.append(user)
+        # 7. Покупатели (Те, кто будут "дюпать")
+        if not User.query.filter_by(role_id=1).first():
+            print("--- Создаем покупателей...")
+            buyer_names = [("Анна", "Иванова"), ("Сергей", "Смирнов")]
+            for f_name, l_name in buyer_names:
+                user = User(
+                    role_id=1,
+                    name=f_name, second_name=l_name,
+                    age=random.randint(18, 65),
+                    email=f"{f_name.lower()}.{l_name.lower()}@example.com"
+                )
+                user.set_password("password123")
+                db.session.add(user)
+                db.session.flush()
+                
+                # Дарим покупателю деньги на кошелек
+                db.session.add(Valet(user_id=user.id, currency_id=ruble.id, balance=Decimal('100000.00')))
+            db.session.commit()
 
-        db.session.commit()
-        print("✓ Покупатели созданы")
+        # 8. Генерация заказов для истории
+        print("--- Генерируем историю заказов и отзывов...")
+        all_buyers = User.query.filter_by(role_id=1).all()
+        all_products = Product.query.all()
+        all_statuses = Status.query.all()
 
-        # Создаем заказы и отзывы
-        for buyer in buyers:
-            # Каждый покупатель делает 2-4 заказа
-            num_orders = random.randint(2, 4)
-            for _ in range(num_orders):
-                # Выбираем случайные товары для заказа
-                order_products = random.sample(products, random.randint(1, 3))
-
-                # Создаем заказ
+        for buyer in all_buyers:
+            if not Order.query.filter_by(buyer_id=buyer.id).first():
+                b_valet = Valet.query.filter_by(user_id=buyer.id).first()
+                
                 order = Order(
                     buyer_id=buyer.id,
-                    status_id=random.randint(1, 5),  # Случайный статус
-                    valet_id=order_products[0][1].id  # Валет первого товара
+                    status_id=random.choice(all_statuses).id,
+                    valet_id=b_valet.id,
+                    date=datetime.utcnow()
                 )
                 db.session.add(order)
                 db.session.flush()
 
-                # Создаем OrderStatus
-                order_status = OrderStatus(
-                    status_id=order.status_id,
+                # Случайный товар в заказ
+                prod = random.choice(all_products)
+                item = OrderItem(
+                    items_id=prod.id,
                     order_id=order.id,
+                    price_at_purchase=prod.price,
+                    quantity=random.randint(1, 2)
+                )
+                db.session.add(item)
+
+                # Отзыв
+                review = Review(
+                    user_id=buyer.id,
+                    product_id=prod.id,
+                    title=f"Отзыв о {prod.name}",
+                    comment="Все отлично, быстрая доставка!",
+                    rating=5,
                     date=datetime.utcnow()
                 )
-                db.session.add(order_status)
-
-                # Добавляем товары в заказ
-                for product_tuple in order_products:
-                    product, _, price = product_tuple
-                    quantity = random.randint(1, 3)
-                    order_item = OrderItem(
-                        items_id=product.id,
-                        order_id=order.id,
-                        price_at_purchase=price,
-                        quantity=quantity
-                    )
-                    db.session.add(order_item)
-
-                    # С шансом 70% создаем отзыв
-                    if random.random() < 0.7:
-                        review = Review(
-                            user_id=buyer.id,
-                            product_id=product.id,
-                            title=f"Отзыв о {product.name}",
-                            comment=f"Хороший товар, рекомендую! Качество соответствует цене.",
-                            date=date.today(),
-                            rating=random.randint(3, 5)  # Положительные отзывы
-                        )
-                        db.session.add(review)
+                db.session.add(review)
 
         db.session.commit()
-        print("✓ Заказы и отзывы созданы")
-
-        print("\n✅ Демонстрационные данные успешно добавлены!")
-        print(f"📊 Статистика:")
-        print(f"   Категорий: {len(categories)}")
-        print(f"   Продавцов: {len(sellers)}")
-        print(f"   Товаров: {len(products)}")
-        print(f"   Покупателей: {len(buyers)}")
-        print(f"   Отзывов: {Review.query.count()}")
-        print("\n🔐 Данные для входа:")
-        print("   Админ: admin@marlya.com / admin123")
-        print("   Продавцы: [имя].[фамилия]@marlya.com / password123")
-        print("   Покупатели: [имя].[фамилия]@example.com / password123")
+        print("✅ База полностью готова к работе!")
 
 if __name__ == "__main__":
     seed_database()

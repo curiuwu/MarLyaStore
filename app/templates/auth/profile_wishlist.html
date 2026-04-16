@@ -1,19 +1,39 @@
 {% extends "base.html" %}
-
-{% block title %}В разработке | MarLya Store{% endblock %}
-
 {% block content %}
-<div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; text-align: center;">
-    <div class="development-placeholder">
-        <h1 style="color: var(--dark-purple); font-size: 2.5rem; margin-bottom: 20px;">
-            📍 Раздел находится в разработке
-        </h1>
-        <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 30px;">
-            Мы уже работаем над тем, чтобы этот функционал стал доступен.
-        </p>
-        <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-primary btn-lg" style="border-radius: 25px; padding: 10px 30px;">
-            Вернуться в профиль
-        </a>
+<div class="container mt-5">
+    <h2>🛒 Ваша корзина</h2>
+    <div class="row">
+        {% if items %}
+            {% for item in items %}
+            <div class="col-md-4 mb-3">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.product.name }}</h5>
+                        <p class="card-text">Цена: {{ item.product.price }} ₽</p>
+                        <p class="card-text">Количество: {{ item.quantity }}</p>
+                        <p class="fw-bold">Итого: {{ item.product.price * item.quantity }} ₽</p>
+                        <a href="{{ url_for('products.remove_from_cart', item_id=item.id) }}" class="btn btn-sm btn-outline-danger">Удалить</a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <div class="col-12 text-center py-5">
+                <p class="display-4">🛒</p>
+                <p class="text-muted">Корзина пуста</p>
+                <a href="{{ url_for('products.catalog') }}" class="btn btn-primary">Вернуться к покупкам</a>
+            </div>
+        {% endif %}
     </div>
+    
+    {% if items %}
+    <div class="mt-4 p-4 border-top text-end">
+        <h4>Общая сумма: <span class="text-primary">{{ total_price }} ₽</span></h4>
+        <p>Ваш баланс: <span class="fw-bold">{{ current_user.wallet.balance if current_user.wallet else 0 }} ₽</span></p>
+        <form action="{{ url_for('products.checkout') }}" method="POST">
+            <button type="submit" class="btn btn-success btn-lg">💰 Подтвердить и оплатить</button>
+        </form>
+    </div>
+    {% endif %}
 </div>
 {% endblock %}
