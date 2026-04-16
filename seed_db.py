@@ -29,6 +29,14 @@ def seed_database():
             db.session.commit()
             print("✓ Валюта создана")
 
+        if not Role.query.first():
+            user_role = Role(id=1, role_name="User")
+            seller_role = Role(id=2, role_name="Seller")
+            admin_role = Role(id=3, role_name="Admin")
+            db.session.add_all([user_role, seller_role, admin_role])
+            db.session.commit()
+            print("✓ Роли созданы")
+            
         # Создаем статусы заказов
         statuses = ["Оформлен", "Подтвержден", "В пути", "Доставлен", "Отменен"]
         for status_name in statuses:
