@@ -4,9 +4,13 @@
 
 {% block content %}
 <div class="container mt-5">
-    <div class="cart-header mb-4">
-        <h2 class="display-6 fw-bold"><span class="purple-text">🛒</span> Ваша корзина</h2>
+    <div class="cart-header mb-3">
+        <h2 class="display-6 fw-bold d-flex align-items-center">
+            <span class="purple-text me-3">🛒</span> Ваша корзина
+        </h2>
     </div>
+
+    <div class="cart-grid">
 
     <div class="cart-grid">
         {% if items %}
@@ -58,16 +62,17 @@
                     </form>
                 </div>
             </div>
-        {% else %}
-            <div class="empty-cart-state text-center py-5">
-                <div class="empty-cart-icon">🛒</div>
-                <h3 class="mb-3">Корзина пуста</h3>
-                <p class="text-muted mb-4">Кажется, вы еще ничего не выбрали.</p>
-                <a href="{{ url_for('products.catalog') }}" class="btn-add-cart" style="text-decoration: none; display: inline-block; width: auto;">
-                    Вернуться к покупкам
-                </a>
-            </div>
-        {% endif %}
+            {% else %}
+            <div class="empty-cart-state text-center mt-5">
+                            <div class="empty-cart-icon">🛒</div>
+                            <h3 class="mb-2">Ваша корзина пуста</h3>
+                            <p class="text-muted mb-4">Кажется, вы еще ничего не выбрали.<br>Самое время заглянуть в наш каталог!</p>
+                            <a href="{{ url_for('products.catalog') }}" class="btn-return-shop">
+                                <i class="fas fa-shopping-bag"></i> Вернуться к покупкам
+                            </a>
+                        </div>
+                    </div>
+            {% endif %}
     </div>
 </div>
 {% endblock %}
