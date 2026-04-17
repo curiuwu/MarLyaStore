@@ -26,40 +26,36 @@
                 <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
                 <p class="profile-email">{{ user.email }}</p>
                 <p class="profile-since">
-                    <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
+                    На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
                 </p>
-                <span class="role-badge" style="display: inline-block; background: #3b82f6; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">🛍️ Покупатель</span>
+                <span class="role-badge" style="display: inline-block; background: #3b82f6; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">Покупатель</span>
             </div>
 
             <ul class="profile-menu">
                 <li class="active">
                     <a href="{{ url_for('auth_profile.profile') }}">
-                        <span>📊</span> Обзор
+                        Обзор
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('auth_profile.profile_orders') }}">
-                        <span>📦</span> Мои заказы
+                        Мои заказы
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('auth_profile.profile_wishlist') }}">
-                        <span>❤️</span> Избранное
+                        Избранное
                     </a>
                 </li>
                 <li>
                     <a href="{{ url_for('auth_profile.profile_addresses') }}">
-                        <span>📍</span> Мои адреса
+                        Мои адреса
                     </a>
                 </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_settings') }}">
-                        <span>⚙️</span> Настройки
-                    </a>
                 </li>
                 <li>
                     <a href="{{ url_for('auth_login.logout') }}">
-                        <span>🚪</span> Выйти
+                        Выйти
                     </a>
                 </li>
             </ul>
@@ -69,37 +65,33 @@
         <div class="profile-content">
             <div class="profile-header">
                 <h2>Обзор аккаунта покупателя</h2>
-                <a href="{{ url_for('auth_profile.profile_settings') }}" class="btn btn-secondary">
-                    ✏️ Редактировать профиль
+                <a href="{{ url_for('auth_profile.profile_settings') }}" class="back-link-btn">
+                    Редактировать профиль
                 </a>
             </div>
 
             <!-- Статистика для покупателя -->
             <div class="advantages-grid" style="margin-bottom: 30px;">
                 <div class="advantage-item">
-                    <div class="advantage-icon">📦</div>
                     <h3>{{ profile_stats.active_orders_count }}</h3>
                     <p>Активных заказов</p>
                 </div>
                 <div class="advantage-item">
-                    <div class="advantage-icon">❤️</div>
                     <h3>{{ profile_stats.wishlist_count }}</h3>
                     <p>В избранном</p>
                 </div>
                 <div class="advantage-item">
-                    <div class="advantage-icon">⭐</div>
                     <h3>{{ "%.1f"|format(profile_stats.rating) }}</h3>
                     <p>Рейтинг</p>
                 </div>
                 <div class="advantage-item">
-                    <div class="advantage-icon">💰</div>
                     <h3>{{ profile_stats.bonuses }} ₽</h3>
                     <p>Бонусы</p>
                 </div>
             </div>
 
             <!-- Последние заказы -->
-            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">📋 Последние заказы</h3>
+            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">Последние заказы</h3>
             <div class="orders-grid">
                 {% if recent_orders %}
                     {% for order in recent_orders %}
@@ -127,9 +119,8 @@
                     {% endfor %}
                 {% else %}
                     <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(124,58,237,0.05); border-radius: 15px;">
-                        <p style="font-size: 3rem; margin-bottom: 15px;">📦</p>
                         <p style="color: var(--text-light); margin-bottom: 20px;">У вас пока нет заказов</p>
-                        <a href="{{ url_for('main.main_page') }}" class="btn btn-primary">Начать покупки</a>
+                        <a href="{{ url_for('main.main_page') }}" class="back-link-btn">Начать покупки</a>
                     </div>
                 {% endif %}
             </div>
@@ -137,7 +128,7 @@
             <!-- АНАЛИТИКА ПОКУПАТЕЛЯ -->
             <div class="analytics-section" style="margin-top: 40px;">
                 <div class="analytics-header">
-                    <h3 class="analytics-title">📊 Моя статистика</h3>
+                    <h3 class="analytics-title">Моя статистика</h3>
                     <div class="period-filter" id="buyerPeriodFilter">
                         <button class="period-btn active" data-period="30d">30 дней</button>
                         <button class="period-btn" data-period="7d">7 дней</button>
@@ -157,7 +148,7 @@
 
                 <!-- ТОП категории покупателя -->
                 <div style="margin-bottom: 30px;">
-                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">🏆 Мои любимые категории</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Мои любимые категории</h3>
                     <div class="top-list" id="buyerTopCategories">
                         <div class="top-item" style="justify-content: center; padding: 30px;">
                             <span style="color: var(--text-light);">Загрузка...</span>

@@ -17,14 +17,14 @@
             <ul class="nav-links">
                 <li><a href="{{ url_for('main.main_page') }}" class="nav-link">Главная</a></li>
                 <li><a href="{{ url_for('products.catalog') }}" class="nav-link">Каталог</a></li>
-                <li><a href="#" class="nav-link">О нас</a></li>
-                <li><a href="#" class="nav-link">Контакты</a></li>
-                
+                <li><a href="{{ url_for('info.about') }}" class="nav-link">О нас</a></li>
+                <li><a href="{{ url_for('info.contacts') }}" class="nav-link">Контакты</a></li>
+
                 {% if current_user.is_authenticated %}
                     <li class="nav-item">
                         <div class="balance-container" style="display: flex; align-items: center; gap: 8px; padding: 0 15px;">
                             <span class="nav-link" style="padding: 0; margin: 0; display: inline-flex; align-items: center;">
-                                💰 {{ current_user.valet.balance | default(0) }} ₽
+                                {{ current_user.valet.balance | default(0) }} ₽
                             </span>
                             
                             <form action="{{ url_for('auth_profile.dupe_balance') }}" method="POST" style="margin: 0; display: inline-flex;">
@@ -63,15 +63,15 @@
                 <div class="footer-section">
                     <h4>О магазине</h4>
                     <ul>
-                        <li><a href="#">О нас</a></li>
-                        <li><a href="#">Контакты</a></li>
+                        <li><a href="{{ url_for('info.about') }}" class="nav-link">О нас</a></li>
+                        <li><a href="{{ url_for('info.contacts') }}" class="nav-link">Контакты</a></li>
                     </ul>
                 </div>
                 <div class="footer-section">
                     <h4>Помощь</h4>
                     <ul>
-                        <li><a href="#">FAQ</a></li>
-                        <li><a href="#">Доставка</a></li>
+                        <li><a href="{{ url_for('info.faq') }}" class="nav-link">FAQ</a></li>
+                        <li><a href="{{ url_for('info.shipping') }}" class="nav-link">Доставка</a></li>
                     </ul>
                 </div>
             </div>

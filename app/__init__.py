@@ -44,6 +44,7 @@ def create_app():
     from app.routes.auth_profile import auth_profile_bp
     from app.routes.products import products_bp
     from app.routes.admin_routes import admin_bp
+    from app.routes.take_info import info_bp
     
     app.register_blueprint(main_bp)
     app.register_blueprint(auth_register_bp)
@@ -51,7 +52,7 @@ def create_app():
     app.register_blueprint(auth_profile_bp)
     app.register_blueprint(products_bp)
     app.register_blueprint(admin_bp)
-    
+    app.register_blueprint(info_bp)
     register_commands(app)
     
     return app
