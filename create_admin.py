@@ -9,6 +9,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app import create_app, db
 from app.models import User, Role
+from app.role_utils import find_role_by_name, sync_model_sequence
 
 def create_admin():
     """Создать администратора"""
@@ -16,8 +17,9 @@ def create_admin():
     
     with app.app_context():
         # Проверяем или создаём роль admin
-        admin_role = Role.query.filter_by(role_name='admin').first()
+        admin_role = find_role_by_name('admin')
         if not admin_role:
+            sync_model_sequence(Role)
             admin_role = Role(role_name='admin')
             db.session.add(admin_role)
             db.session.commit()

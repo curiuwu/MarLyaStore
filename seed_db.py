@@ -8,6 +8,7 @@ from app.models import (
     OrderStatus, Category, Product, OrderItem, Wishlist, Cart, Review,
     ProductImage, Discount
 )
+from app.role_utils import sync_model_sequence
 from datetime import datetime
 import random
 from decimal import Decimal
@@ -16,16 +17,18 @@ def seed_database():
     app = create_app()
 
     with app.app_context():
-        print("🌱 Начинаем заполнение базы демонстрационными данными...")
+        print("Начинаем заполнение базы демонстрационными данными...")
 
         # 1. Роли (Сначала роли, так как User на них ссылается)
         if not Role.query.first():
             print("--- Создаем роли...")
             db.session.add_all([
-                Role(id=1, role_name="User"),
-                Role(id=2, role_name="Seller"),
-                Role(id=3, role_name="Admin")
+                Role(id=1, role_name="user"),
+                Role(id=2, role_name="seller"),
+                Role(id=3, role_name="admin")
             ])
+            db.session.flush()
+            sync_model_sequence(Role)
             db.session.commit()
 
         # 2. Валюта
@@ -42,6 +45,8 @@ def seed_database():
             statuses_names = ["Оформлен", "Подтвержден", "В пути", "Доставлен", "Отменен"]
             for idx, s_name in enumerate(statuses_names, 1):
                 db.session.add(Status(id=idx, name=s_name))
+            db.session.flush()
+            sync_model_sequence(Status)
             db.session.commit()
 
         # 4. Категории
@@ -50,6 +55,8 @@ def seed_database():
             categories_data = ["Электроника", "Одежда", "Обувь", "Дом и сад", "Косметика"]
             for idx, cat_name in enumerate(categories_data, 1):
                 db.session.add(Category(id=idx, name=cat_name))
+            db.session.flush()
+            sync_model_sequence(Category)
             db.session.commit()
 
         # Получаем актуальные категории из базы для ссылок
@@ -159,7 +166,7 @@ def seed_database():
                 db.session.add(review)
 
         db.session.commit()
-        print("✅ База полностью готова к работе!")
+        print("База полностью готова к работе!")
 
 if __name__ == "__main__":
     seed_database()

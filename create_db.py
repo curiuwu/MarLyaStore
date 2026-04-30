@@ -8,6 +8,6 @@ app = create_app()
 with app.app_context():
     try:
         db.create_all()
-        print("✅ Таблицы успешно созданы в PostgreSQL!")
+        print("Таблицы успешно созданы в PostgreSQL!")
     except Exception as e:
-        print(f"❌ Ошибка при создании базы: {e}")
+        print(f"Ошибка при создании базы: {e}")

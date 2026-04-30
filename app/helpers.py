@@ -4,6 +4,7 @@ from functools import wraps
 from flask import redirect, url_for, flash, abort, current_app
 from flask_login import current_user
 import logging
+from app.role_utils import get_user_role_name
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +18,7 @@ def admin_required(f):
             return redirect(url_for('auth_login.login_page'))
         
         # Проверяем роль пользователя
-        user_role = current_user.role.role_name if current_user.role else None
+        user_role = get_user_role_name(current_user)
         
         if user_role != 'admin':
             logger.warning(f"Попытка несанкционированного доступа к админ-панели: user_id={current_user.id}, role={user_role}")
@@ -44,7 +45,7 @@ def role_required(*allowed_roles):
                 flash('Пожалуйста, войдите в систему', 'warning')
                 return redirect(url_for('auth_login.login_page'))
             
-            user_role = current_user.role.role_name if current_user.role else None
+            user_role = get_user_role_name(current_user)
             
             if user_role not in allowed_roles:
                 logger.warning(f"Попытка доступа с недостаточными правами: user_id={current_user.id}, role={user_role}, required={allowed_roles}")

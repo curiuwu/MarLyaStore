@@ -3,6 +3,7 @@
 Script to recreate the database with all models including password_hash field
 """
 from app import create_app, db
+from app.role_utils import sync_model_sequence
 
 def recreate_database():
     app = create_app()
@@ -30,6 +31,8 @@ def recreate_database():
                 role = Role(**role_data)
                 db.session.add(role)
         
+        db.session.flush()
+        sync_model_sequence(Role)
         db.session.commit()
         print("✓ Роли добавлены по умолчанию")
         

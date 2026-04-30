@@ -3,6 +3,7 @@ from flask_login import login_required, current_user
 from app.services.analytics import AnalyticsService
 from app.models import Order
 from app import db
+from app.role_utils import get_user_role_name
 from decimal import Decimal
 auth_profile_bp = Blueprint("auth_profile", __name__, url_prefix="/auth")
 
@@ -10,7 +11,7 @@ auth_profile_bp = Blueprint("auth_profile", __name__, url_prefix="/auth")
 @login_required
 def profile():
     # Получаем роль пользователя
-    user_role = current_user.role.role_name if current_user.role else "user"
+    user_role = get_user_role_name(current_user) or "user"
     
     # Вычисляем общую статистику для профиля
     profile_stats = {
@@ -53,7 +54,7 @@ def profile_addresses():
 @login_required
 def api_seller_stats():
     """JSON API для статистики продавца"""
-    user_role = current_user.role.role_name if current_user.role else "user"
+    user_role = get_user_role_name(current_user) or "user"
     if user_role != "seller":
         return jsonify({"error": "Unauthorized"}), 403
     
@@ -75,7 +76,7 @@ def api_seller_stats():
 @login_required
 def api_admin_stats():
     """JSON API для статистики администратора"""
-    user_role = current_user.role.role_name if current_user.role else "user"
+    user_role = get_user_role_name(current_user) or "user"
     if user_role != "admin":
         return jsonify({"error": "Unauthorized"}), 403
     
@@ -116,7 +117,7 @@ def dupe_balance():
 @login_required
 def api_buyer_stats():
     """JSON API для статистики покупателя"""
-    user_role = current_user.role.role_name if current_user.role else "user"
+    user_role = get_user_role_name(current_user) or "user"
     if user_role not in ["user", "customer"]:
         return jsonify({"error": "Unauthorized"}), 403
     
