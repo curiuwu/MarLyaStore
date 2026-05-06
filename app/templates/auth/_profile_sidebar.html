@@ -1,0 +1,78 @@
+{% set role_name = user.role.role_name|lower if user.role else 'user' %}
+{% set active_page = active_page|default('dashboard') %}
+
+<div class="profile-sidebar">
+    <div class="profile-avatar">
+        <div class="avatar-wrapper">
+            <div class="avatar-image">
+                {{ user.name[0] }}{{ user.second_name[0] }}
+            </div>
+        </div>
+        <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
+        <p class="profile-email">{{ user.email }}</p>
+        <p class="profile-since">
+            <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'N/A' }}
+        </p>
+
+        {% if role_name == 'admin' %}
+            <span class="role-badge" style="background: #ef4444;">Администратор</span>
+        {% elif role_name == 'seller' %}
+            <span class="role-badge" style="background: #10b981;">Продавец</span>
+        {% else %}
+            <span class="role-badge" style="background: #3b82f6;">Покупатель</span>
+        {% endif %}
+    </div>
+
+    <ul class="profile-menu">
+        {% if role_name == 'admin' %}
+            <li class="{% if active_page == 'dashboard' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile') }}"><span>📊</span> Обзор системы</a>
+            </li>
+            <li>
+                <a href="{{ url_for('admin.dashboard') }}"><span>👑</span> Админ-панель</a>
+            </li>
+            <li class="{% if active_page == 'admin_products' %}active{% endif %}">
+                <a href="{{ url_for('admin.products_list') }}"><span>📦</span> Товары</a>
+            </li>
+            <li class="{% if active_page == 'admin_users' %}active{% endif %}">
+                <a href="{{ url_for('admin.users_list') }}"><span>👥</span> Пользователи</a>
+            </li>
+            <li class="{% if active_page == 'settings' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_settings') }}"><span>⚙</span> Настройки</a>
+            </li>
+        {% elif role_name == 'seller' %}
+            <li class="{% if active_page == 'dashboard' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile') }}"><span>📊</span> Обзор магазина</a>
+            </li>
+            <li class="{% if active_page == 'seller_product_create' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.seller_product_create') }}"><span>➕</span> Добавить товар</a>
+            </li>
+            <li class="{% if active_page == 'orders' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_orders') }}"><span>📦</span> Заказы</a>
+            </li>
+            <li class="{% if active_page == 'settings' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_settings') }}"><span>⚙</span> Настройки</a>
+            </li>
+        {% else %}
+            <li class="{% if active_page == 'dashboard' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile') }}"><span>📊</span> Обзор</a>
+            </li>
+            <li class="{% if active_page == 'orders' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_orders') }}"><span>📦</span> Мои заказы</a>
+            </li>
+            <li class="{% if active_page == 'wishlist' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_wishlist') }}"><span>♥</span> Избранное</a>
+            </li>
+            <li class="{% if active_page == 'addresses' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_addresses') }}"><span>📍</span> Адреса</a>
+            </li>
+            <li class="{% if active_page == 'settings' %}active{% endif %}">
+                <a href="{{ url_for('auth_profile.profile_settings') }}"><span>⚙</span> Настройки</a>
+            </li>
+        {% endif %}
+
+        <li>
+            <a href="{{ url_for('auth_login.logout') }}"><span>🚪</span> Выйти</a>
+        </li>
+    </ul>
+</div>

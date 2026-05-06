@@ -1,70 +1,61 @@
 {% extends "base.html" %}
 
-{% block title %}Мои заказы | MarLya Store{% endblock %}
+{% block title %}История покупок | MarLya Store{% endblock %}
 
 {% block content %}
-<div class="orders-container">
-    <h2 class="fw-black mb-5"><span class="purple-brand">История</span> моих заказов</h2>
+<div class="animated-bg"></div>
 
-    {% if orders %}
-        {% for order in orders %}
-        <div class="order-item-card">
-            <div class="order-meta-header">
-                <div>
-                    <span class="order-info-label">ID заказа</span>
-                    <div class="order-number">#{{ order.id }}</div>
-                </div>
-                <div class="text-end">
-                    <span class="order-info-label">Дата оформления</span>
-                    <div class="fw-bold text-dark">{{ order.date.strftime('%d.%m.%Y %H:%M') }}</div>
-                </div>
+<section class="profile-section">
+    <div class="profile-grid">
+        {% set active_page = 'orders' %}
+        {% include "auth/_profile_sidebar.html" %}
+
+        <div class="profile-content">
+            <div class="profile-header">
+                <h2>История покупок</h2>
+                <a href="{{ url_for('products.catalog') }}" class="btn btn-secondary">Каталог</a>
             </div>
 
-            <div class="order-grid-header">
-                <div class="col-name grid-label">Товар</div>
-                <div class="col-qty grid-label">Кол-во</div>
-                <div class="col-prc grid-label">Цена</div>
-            </div>
+            <div class="orders-grid" style="grid-template-columns: 1fr;">
+                {% if orders %}
+                    {% for order in orders %}
+                        <div class="order-card">
+                            <div class="order-header">
+                                <span class="order-number">Заказ #{{ order.id }}</span>
+                                <span class="order-status">{{ order.status }}</span>
+                            </div>
 
-            {% for item in order.order_items %}
-            <div class="order-grid-row">
-                <div class="col-name item-name">{{ item.product.name }}</div>
-                <div class="col-qty">
-                    <span class="qty-badge">{{ item.quantity }}</span>
-                </div>
-                <div class="col-prc price-val">
-                    {{ "{:,.0f}".format(item.product.price).replace(',', ' ') }} ₽
-                </div>
-            </div>
-            {% endfor %}
+                            <div class="order-body">
+                                <p style="color: var(--text-light); margin-bottom: 15px;">
+                                    {{ order.date.strftime('%d.%m.%Y %H:%M') if order.date else 'N/A' }}
+                                </p>
 
-            <div class="order-footer-tools">
-                <div class="status-tag">
-                    <i class="fas fa-check-circle me-1"></i> Оплачено (баланс)
-                </div>
-                <div class="total-summary">
-                    <span class="total-txt">Сумма заказа:</span>
-                    <span class="total-amount">
-                        {% set total_order = [] %}
-                        {% for item in order.order_items %}
-                            {% set _ = total_order.append(item.product.price * item.quantity) %}
-                        {% endfor %}
-                        {{ "{:,.0f}".format(total_order | sum).replace(',', ' ') }} ₽
-                    </span>
-                </div>
+                                <div style="display: grid; gap: 10px;">
+                                    {% for item in order['items'] %}
+                                        <div style="display: grid; grid-template-columns: 1fr auto auto; gap: 15px; align-items: center; padding: 10px 0; border-bottom: 1px solid rgba(124,58,237,0.12);">
+                                            <div style="font-weight: 600; color: var(--dark-purple);">{{ item.name }}</div>
+                                            <div style="color: var(--text-light);">x {{ item.quantity }}</div>
+                                            <div style="font-weight: 700;">{{ "{:,.0f}".format(item.total).replace(',', ' ') }} ₽</div>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+
+                            <div class="order-footer">
+                                <span style="color: var(--text-light);">Сумма заказа</span>
+                                <span class="order-price">{{ "{:,.0f}".format(order.total).replace(',', ' ') }} ₽</span>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div style="text-align: center; padding: 60px 20px; background: rgba(124,58,237,0.05); border-radius: 12px;">
+                        <h3 style="color: var(--dark-purple); margin-bottom: 10px;">Заказов пока нет</h3>
+                        <p style="color: var(--text-light); margin-bottom: 20px;">После покупки заказы появятся здесь.</p>
+                        <a href="{{ url_for('products.catalog') }}" class="btn btn-primary">Перейти в каталог</a>
+                    </div>
+                {% endif %}
             </div>
         </div>
-        {% endfor %}
-    {% else %}
-        <div class="text-center py-5">
-            <h4 class="text-muted">Заказов пока не было...</h4>
-        </div>
-    {% endif %}
-
-    <div class="text-start mt-4">
-        <a href="{{ url_for('auth_profile.profile') }}" class="back-link-btn">
-            Вернуться в профиль
-        </a>
     </div>
-</div>
+</section>
 {% endblock %}

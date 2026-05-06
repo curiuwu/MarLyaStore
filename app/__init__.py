@@ -1,7 +1,7 @@
-from flask import Flask
+from flask import Flask, flash, redirect, request, url_for
 from config import Config
 from flask_sqlalchemy import SQLAlchemy
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user, logout_user
 from app.logging_config import setup_logging
 import logging
 
@@ -21,6 +21,14 @@ def create_app():
     login_manager.login_view = 'auth_login.login_page'
     login_manager.login_message = 'Пожалуйста, войдите для доступа к этой странице'
     login_manager.login_message_category = 'info'
+
+    @app.before_request
+    def ensure_active_user_session():
+        if current_user.is_authenticated and not current_user.is_active:
+            logout_user()
+            if request.endpoint != 'auth_login.login_page':
+                flash('Аккаунт заблокирован', 'warning')
+                return redirect(url_for('auth_login.login_page'))
     
     @app.context_processor
     def utility_processor():

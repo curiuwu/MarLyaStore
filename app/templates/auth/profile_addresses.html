@@ -1,19 +1,26 @@
 {% extends "base.html" %}
 
-{% block title %}В разработке | MarLya Store{% endblock %}
+{% block title %}Адреса | MarLya Store{% endblock %}
 
 {% block content %}
-<div class="container d-flex flex-column align-items-center justify-content-center" style="min-height: 60vh; text-align: center;">
-    <div class="development-placeholder">
-        <h1 style="color: var(--dark-purple); font-size: 2.5rem; margin-bottom: 20px;">
-            📍 Раздел находится в разработке
-        </h1>
-        <p class="text-muted" style="font-size: 1.1rem; margin-bottom: 30px;">
-            Мы уже работаем над тем, чтобы этот функционал стал доступен.
-        </p>
-        <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-primary btn-lg" style="border-radius: 25px; padding: 10px 30px;">
-            Вернуться в профиль
-        </a>
+<div class="animated-bg"></div>
+
+<section class="profile-section">
+    <div class="profile-grid">
+        {% set active_page = 'addresses' %}
+        {% include "auth/_profile_sidebar.html" %}
+
+        <div class="profile-content">
+            <div class="profile-header">
+                <h2>Адреса доставки</h2>
+            </div>
+
+            <div class="analytics-section" style="text-align: center; padding: 60px 20px;">
+                <h3 style="color: var(--dark-purple); margin-bottom: 12px;">Раздел находится в разработке</h3>
+                <p style="color: var(--text-light); margin-bottom: 24px;">Страница подключена к единому layout кабинета.</p>
+                <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-primary">Вернуться в профиль</a>
+            </div>
+        </div>
     </div>
-</div>
+</section>
 {% endblock %}

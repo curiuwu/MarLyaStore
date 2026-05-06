@@ -1,0 +1,259 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Управление пользователями - Admin Panel{% endblock %}
+
+{% block admin_content %}
+<style>
+    .users-toolbar {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .users-toolbar input,
+    .users-toolbar select {
+        padding: 8px 12px;
+        border: 1px solid var(--light-purple);
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .users-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .users-table thead {
+        background: var(--bg-purple);
+        border-bottom: 2px solid var(--light-purple);
+    }
+
+    .users-table th,
+    .users-table td {
+        padding: 14px;
+        border-bottom: 1px solid var(--bg-purple);
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .users-table th {
+        color: var(--dark-purple);
+        font-weight: 600;
+    }
+
+    .user-name {
+        font-weight: 700;
+        color: var(--dark-purple);
+    }
+
+    .status-pill,
+    .role-pill {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 999px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    .status-active {
+        background: #dcfce7;
+        color: #166534;
+    }
+
+    .status-blocked {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+
+    .role-pill {
+        background: var(--bg-purple);
+        color: var(--dark-purple);
+    }
+
+    .inline-form {
+        display: inline-flex;
+        gap: 8px;
+        align-items: center;
+        margin: 0;
+    }
+
+    .inline-form select {
+        padding: 6px 8px;
+        border: 1px solid var(--light-purple);
+        border-radius: 6px;
+    }
+
+    .btn-small {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: 12px;
+    }
+
+    .btn-blue {
+        background: #3b82f6;
+        color: white;
+    }
+
+    .btn-red {
+        background: #ef4444;
+        color: white;
+    }
+
+    .btn-green {
+        background: #16a34a;
+        color: white;
+    }
+
+    .pagination {
+        display: flex;
+        gap: 8px;
+        justify-content: center;
+        margin-top: 30px;
+        flex-wrap: wrap;
+    }
+
+    .pagination a,
+    .pagination span {
+        padding: 8px 12px;
+        border: 1px solid var(--light-purple);
+        border-radius: 6px;
+        text-decoration: none;
+        color: var(--primary-purple);
+    }
+
+    .pagination .active {
+        background: var(--primary-purple);
+        color: white;
+        border-color: var(--primary-purple);
+    }
+
+    @media (max-width: 900px) {
+        .users-table th:nth-child(3),
+        .users-table td:nth-child(3),
+        .users-table th:nth-child(4),
+        .users-table td:nth-child(4) {
+            display: none;
+        }
+    }
+</style>
+
+<div class="admin-header">
+    <h1>Пользователи</h1>
+</div>
+
+<form method="get" class="users-toolbar" action="{{ url_for('admin.users_list') }}">
+    <input type="text" name="search" placeholder="Email, имя или фамилия" value="{{ search }}">
+    <select name="role_id">
+        <option value="0">Все роли</option>
+        {% for role in roles %}
+            <option value="{{ role.id }}" {% if role.id == role_id %}selected{% endif %}>{{ role.role_name }}</option>
+        {% endfor %}
+    </select>
+    <select name="active">
+        <option value="" {% if active == '' %}selected{% endif %}>Все статусы</option>
+        <option value="1" {% if active == '1' %}selected{% endif %}>Активные</option>
+        <option value="0" {% if active == '0' %}selected{% endif %}>Заблокированные</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Найти</button>
+    <a href="{{ url_for('admin.users_list') }}" class="btn btn-secondary">Сбросить</a>
+</form>
+
+{% if users.items %}
+    <div style="overflow-x: auto;">
+        <table class="users-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Пользователь</th>
+                    <th>Роль</th>
+                    <th>Статус</th>
+                    <th>Создан</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users.items %}
+                    <tr>
+                        <td>#{{ user.id }}</td>
+                        <td>
+                            <div class="user-name">{{ user.name }} {{ user.second_name }}</div>
+                            <div style="color: var(--text-light); font-size: 13px;">{{ user.email }}</div>
+                        </td>
+                        <td>
+                            <span class="role-pill">{{ user.role.role_name if user.role else 'N/A' }}</span>
+                        </td>
+                        <td>
+                            {% if user.is_active %}
+                                <span class="status-pill status-active">Активен</span>
+                            {% else %}
+                                <span class="status-pill status-blocked">Заблокирован</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ user.created_at.strftime('%d.%m.%Y') if user.created_at else 'N/A' }}</td>
+                        <td>
+                            {% if user.id != current_user.id %}
+                                <form method="post" action="{{ url_for('admin.user_update_role', user_id=user.id) }}" class="inline-form">
+                                    <select name="role_id" required>
+                                        {% for role in managed_roles %}
+                                            <option value="{{ role.id }}" {% if role.id == user.role_id %}selected{% endif %}>
+                                                {{ role.role_name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                    <button type="submit" class="btn-small btn-blue">Сохранить</button>
+                                </form>
+
+                                {% if user.is_active %}
+                                    <form method="post" action="{{ url_for('admin.user_block', user_id=user.id) }}" class="inline-form">
+                                        <button type="submit" class="btn-small btn-red">Блокировать</button>
+                                    </form>
+                                {% else %}
+                                    <form method="post" action="{{ url_for('admin.user_unblock', user_id=user.id) }}" class="inline-form">
+                                        <button type="submit" class="btn-small btn-green">Разблокировать</button>
+                                    </form>
+                                {% endif %}
+                            {% else %}
+                                <span style="color: var(--text-light); font-size: 13px;">Текущий администратор</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% if users.pages > 1 %}
+        <div class="pagination">
+            {% if users.has_prev %}
+                <a href="{{ url_for('admin.users_list', page=users.prev_num, search=search, role_id=role_id, active=active) }}">Назад</a>
+            {% endif %}
+
+            {% for page_num in users.iter_pages() %}
+                {% if page_num %}
+                    {% if page_num == users.page %}
+                        <span class="active">{{ page_num }}</span>
+                    {% else %}
+                        <a href="{{ url_for('admin.users_list', page=page_num, search=search, role_id=role_id, active=active) }}">{{ page_num }}</a>
+                    {% endif %}
+                {% endif %}
+            {% endfor %}
+
+            {% if users.has_next %}
+                <a href="{{ url_for('admin.users_list', page=users.next_num, search=search, role_id=role_id, active=active) }}">Далее</a>
+            {% endif %}
+        </div>
+    {% endif %}
+
+    <p style="text-align: center; color: var(--text-light); margin-top: 20px;">
+        Всего пользователей: {{ users.total }}
+    </p>
+{% else %}
+    <div style="text-align: center; padding: 60px 20px; color: var(--text-light);">
+        <h3>Пользователи не найдены</h3>
+    </div>
+{% endif %}
+{% endblock %}

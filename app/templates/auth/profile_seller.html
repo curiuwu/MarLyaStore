@@ -7,82 +7,18 @@
 
 <section class="profile-section">
     <div class="profile-grid">
-        <!-- Сайдбар с информацией о пользователе -->
-        <div class="profile-sidebar">
-            <div class="profile-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-image">
-                        {{ user.name[0] }}{{ user.second_name[0] }}
-                    </div>
-                    <label for="avatar-upload" class="avatar-upload">
-                        📷
-                    </label>
-                    <input type="file" 
-                           id="avatar-upload" 
-                           accept="image/*" 
-                           style="display: none;"
-                           onchange="previewAvatar(this)">
-                </div>
-                <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
-                <p class="profile-email">{{ user.email }}</p>
-                <p class="profile-since">
-                    <span>📅</span> На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
-                </p>
-                <span class="role-badge" style="display: inline-block; background: #10b981; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">🏪 Продавец</span>
-            </div>
+        {% set active_page = 'dashboard' %}
+        {% include "auth/_profile_sidebar.html" %}
 
-            <ul class="profile-menu">
-                <li class="active">
-                    <a href="{{ url_for('auth_profile.profile') }}">
-                        <span>📊</span> Обзор магазина
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_orders') }}">
-                        <span>📦</span> Заказы покупателей
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <span>📋</span> Мои товары
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <span>💳</span> Выплаты
-                    </a>
-                </li>
-                <li>
-                    <a href="#">
-                        <span>📈</span> Статистика
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_settings') }}">
-                        <span>⚙️</span> Настройки магазина
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_login.logout') }}">
-                        <span>🚪</span> Выйти
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Основной контент -->
         <div class="profile-content">
             <div class="profile-header">
                 <h2>Обзор магазина</h2>
-                <a href="#" class="btn btn-primary">
-                    ➕ Добавить товар
-                </a>
+                <a href="{{ url_for('auth_profile.seller_product_create') }}" class="btn btn-primary">Добавить товар</a>
             </div>
 
-            <!-- АНАЛИТИКА ПРОДАВЦА -->
             <div class="analytics-section">
                 <div class="analytics-header">
-                    <h3 class="analytics-title">📊 Аналитика</h3>
+                    <h3 class="analytics-title">Аналитика продавца</h3>
                     <div class="period-filter" id="sellerPeriodFilter">
                         <button class="period-btn active" data-period="30d">30 дней</button>
                         <button class="period-btn" data-period="7d">7 дней</button>
@@ -92,7 +28,6 @@
                     </div>
                 </div>
 
-                <!-- KPI-карточки -->
                 <div class="kpi-grid" id="sellerKpiGrid">
                     <div class="kpi-card loading" style="height: 120px;"></div>
                     <div class="kpi-card loading" style="height: 120px;"></div>
@@ -100,9 +35,8 @@
                     <div class="kpi-card loading" style="height: 120px;"></div>
                 </div>
 
-                <!-- ТОП товары -->
                 <div style="margin-bottom: 30px;">
-                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">🏆 Топ товары по продажам</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Топ товаров по продажам</h3>
                     <div class="top-list" id="sellerTopProducts">
                         <div class="top-item" style="justify-content: center; padding: 30px;">
                             <span style="color: var(--text-light);">Загрузка...</span>
@@ -110,9 +44,8 @@
                     </div>
                 </div>
 
-                <!-- ТОП категории -->
                 <div style="margin-bottom: 30px;">
-                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">📂 Топ категории</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Топ категорий</h3>
                     <div class="top-list" id="sellerTopCategories">
                         <div class="top-item" style="justify-content: center; padding: 30px;">
                             <span style="color: var(--text-light);">Загрузка...</span>
@@ -120,9 +53,8 @@
                     </div>
                 </div>
 
-                <!-- Распределение по статусам -->
                 <div>
-                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">📍 Заказы по статусам</h3>
+                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Заказы по статусам</h3>
                     <div class="status-distribution" id="sellerStatusDist">
                         <div class="status-badge" style="height: 100px; display: flex; justify-content: center; align-items: center;">
                             <span style="color: var(--text-light);">Загрузка...</span>
@@ -135,127 +67,60 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     let currentPeriod = '30d';
-    
-    // Загрузка данных аналитики продавца
+
     async function loadSellerAnalytics(period) {
         try {
-            const response = await fetch(`/auth/api/seller/stats?period=${period}`);
+            const response = await fetch('/auth/api/seller/stats?period=' + period);
             const data = await response.json();
-            
             renderSellerKPI(data);
-            renderSellerTopProducts(data.top_products);
-            renderSellerTopCategories(data.top_categories);
-            renderSellerStatusDist(data.orders_by_status);
+            renderSellerTopProducts(data.top_products || []);
+            renderSellerTopCategories(data.top_categories || []);
+            renderSellerStatusDist(data.orders_by_status || []);
         } catch (error) {
             console.error('Ошибка загрузки аналитики:', error);
         }
     }
-    
+
     function renderSellerKPI(data) {
-        const html = `
-            <div class="kpi-card">
-                <div class="kpi-icon">📦</div>
-                <div class="kpi-label">Заказов</div>
-                <div class="kpi-value">${data.orders_count}</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon">💰</div>
-                <div class="kpi-label">Выручка</div>
-                <div class="kpi-value">${Math.round(data.revenue).toLocaleString('ru-RU')} ₽</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon">🎯</div>
-                <div class="kpi-label">Средний чек</div>
-                <div class="kpi-value">${Math.round(data.avg_check).toLocaleString('ru-RU')} ₽</div>
-            </div>
-            <div class="kpi-card">
-                <div class="kpi-icon">⭐</div>
-                <div class="kpi-label">Товаров продано</div>
-                <div class="kpi-value">${data.top_products.reduce((sum, p) => sum + (p.qty || 0), 0)}</div>
-            </div>
-        `;
-        document.getElementById('sellerKpiGrid').innerHTML = html;
+        const totalQty = (data.top_products || []).reduce(function(sum, p) { return sum + (p.qty || 0); }, 0);
+        document.getElementById('sellerKpiGrid').innerHTML =
+            '<div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-label">Заказов</div><div class="kpi-value">' + data.orders_count + '</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-label">Выручка</div><div class="kpi-value">' + Math.round(data.revenue).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">🎯</div><div class="kpi-label">Средний чек</div><div class="kpi-value">' + Math.round(data.avg_check).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Товаров продано</div><div class="kpi-value">' + totalQty + '</div></div>';
     }
-    
+
     function renderSellerTopProducts(products) {
-        if (products.length === 0) {
-            document.getElementById('sellerTopProducts').innerHTML = `
-                <div class="empty-state" style="margin: 0; border-radius: 0;">
-                    <p style="color: var(--text-light);">Нет данных о продажах</p>
-                </div>
-            `;
+        if (!products.length) {
+            document.getElementById('sellerTopProducts').innerHTML = '<div class="empty-state" style="margin: 0; border-radius: 0;"><p style="color: var(--text-light);">Нет данных о продажах</p></div>';
             return;
         }
-        
-        const html = products.map((p, idx) => `
-            <div class="top-item">
-                <div style="display: flex; align-items: center; flex: 1;">
-                    <div class="top-item-rank">${idx + 1}</div>
-                    <div class="top-item-info">
-                        <div class="top-item-name">${p.name}</div>
-                        <div class="top-item-meta">${p.qty} шт. • ${p.count} заказов</div>
-                    </div>
-                </div>
-                <div class="top-item-value">${Math.round(p.revenue).toLocaleString('ru-RU')} ₽</div>
-            </div>
-        `).join('');
-        
-        document.getElementById('sellerTopProducts').innerHTML = html;
-    }
-    
-    function renderSellerTopCategories(categories) {
-        if (categories.length === 0) {
-            document.getElementById('sellerTopCategories').innerHTML = `
-                <div class="empty-state" style="margin: 0; border-radius: 0;">
-                    <p style="color: var(--text-light);">Нет данных по категориям</p>
-                </div>
-            `;
-            return;
-        }
-        
-        const html = categories.map((c, idx) => `
-            <div class="top-item">
-                <div style="display: flex; align-items: center; flex: 1;">
-                    <div class="top-item-rank">${idx + 1}</div>
-                    <div class="top-item-info">
-                        <div class="top-item-name">${c.name}</div>
-                        <div class="top-item-meta">${c.orders} заказов • ${c.qty} шт.</div>
-                    </div>
-                </div>
-                <div class="top-item-value">${c.orders}</div>
-            </div>
-        `).join('');
-        
-        document.getElementById('sellerTopCategories').innerHTML = html;
-    }
-    
-    function renderSellerStatusDist(statuses) {
-        const statusMap = {
-            'pending': { label: 'Ожидание', badge: 'pending' },
-            'processing': { label: 'В обработке', badge: 'processing' },
-            'completed': { label: 'Завершено', badge: 'completed' },
-            'cancelled': { label: 'Отменено', badge: 'cancelled' }
-        };
-        
-        const html = statuses.map(s => {
-            const config = statusMap[s.status.toLowerCase()] || { label: s.status, badge: 'pending' };
-            return `
-                <div class="status-badge ${config.badge}">
-                    <div class="status-name">${config.label}</div>
-                    <div class="status-count">${s.count}</div>
-                </div>
-            `;
+        document.getElementById('sellerTopProducts').innerHTML = products.map(function(p, idx) {
+            return '<div class="top-item"><div style="display: flex; align-items: center; flex: 1;"><div class="top-item-rank">' + (idx + 1) + '</div><div class="top-item-info"><div class="top-item-name">' + p.name + '</div><div class="top-item-meta">' + p.qty + ' шт. • ' + p.count + ' заказов</div></div></div><div class="top-item-value">' + Math.round(p.revenue).toLocaleString('ru-RU') + ' ₽</div></div>';
         }).join('');
-        
-        document.getElementById('sellerStatusDist').innerHTML = html || '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Нет заказов</p>';
     }
-    
-    // Фильтр периода
+
+    function renderSellerTopCategories(categories) {
+        if (!categories.length) {
+            document.getElementById('sellerTopCategories').innerHTML = '<div class="empty-state" style="margin: 0; border-radius: 0;"><p style="color: var(--text-light);">Нет данных по категориям</p></div>';
+            return;
+        }
+        document.getElementById('sellerTopCategories').innerHTML = categories.map(function(c, idx) {
+            return '<div class="top-item"><div style="display: flex; align-items: center; flex: 1;"><div class="top-item-rank">' + (idx + 1) + '</div><div class="top-item-info"><div class="top-item-name">' + c.name + '</div><div class="top-item-meta">' + c.orders + ' заказов • ' + c.qty + ' шт.</div></div></div><div class="top-item-value">' + c.orders + '</div></div>';
+        }).join('');
+    }
+
+    function renderSellerStatusDist(statuses) {
+        document.getElementById('sellerStatusDist').innerHTML = statuses.length
+            ? statuses.map(function(s) { return '<div class="status-badge"><div class="status-name">' + s.status + '</div><div class="status-count">' + s.count + '</div></div>'; }).join('')
+            : '<p style="grid-column: 1/-1; text-align: center; color: var(--text-light);">Нет заказов</p>';
+    }
+
     document.getElementById('sellerPeriodFilter').addEventListener('click', function(e) {
         if (e.target.classList.contains('period-btn')) {
-            document.querySelectorAll('#sellerPeriodFilter .period-btn').forEach(btn => {
+            document.querySelectorAll('#sellerPeriodFilter .period-btn').forEach(function(btn) {
                 btn.classList.remove('active');
             });
             e.target.classList.add('active');
@@ -263,8 +128,7 @@ document.addEventListener('DOMContentLoaded', async function() {
             loadSellerAnalytics(currentPeriod);
         }
     });
-    
-    // Инициальная загрузка
+
     loadSellerAnalytics(currentPeriod);
 });
 </script>

@@ -117,8 +117,6 @@
                                 <option value="{{ role.id }}">Покупатель</option>
                             {% elif role.role_name|lower == 'seller' %}
                                 <option value="{{ role.id }}">Продавец</option>
-                            {% elif role.role_name|lower == 'admin' %}
-                                <option value="{{ role.id }}">Администратор</option>
                             {% else %}
                                 <option value="{{ role.id }}">{{ role.role_name }}</option>
                             {% endif %}

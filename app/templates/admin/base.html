@@ -199,6 +199,12 @@
                 </a>
             </li>
             <li>
+                <a href="{{ url_for('admin.users_list') }}"
+                   class="{% if 'user' in request.endpoint %}active{% endif %}">
+                   Пользователи
+                </a>
+            </li>
+            <li>
                 <a href="{{ url_for('auth_profile.profile') }}">
                    ← Назад в профиль
                 </a>

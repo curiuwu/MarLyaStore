@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block title %}Добавить товар | MarLya Store{% endblock %}
+
+{% block content %}
+<div class="animated-bg"></div>
+
+<section class="profile-section">
+    <div class="profile-grid">
+        {% set active_page = 'seller_product_create' %}
+        {% include "auth/_profile_sidebar.html" %}
+
+        <div class="profile-content">
+            <div class="profile-header">
+                <h2>Добавить товар</h2>
+                <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-secondary">Назад</a>
+            </div>
+
+            <div class="analytics-section">
+                <form method="post" action="{{ url_for('auth_profile.seller_product_create') }}">
+                    <div class="form-group">
+                        <label for="name" class="form-label">Название товара</label>
+                        <input type="text" id="name" name="name" class="form-control" minlength="3" required placeholder="Название товара">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="description" class="form-label">Описание</label>
+                        <textarea id="description" name="description" class="form-control" minlength="10" required style="min-height: 140px;" placeholder="Подробное описание товара"></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="price" class="form-label">Цена, ₽</label>
+                            <input type="number" id="price" name="price" class="form-control" min="0.01" step="0.01" required placeholder="1990.00">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="category_id" class="form-label">Категория</label>
+                            <select id="category_id" name="category_id" class="form-control" required>
+                                <option value="">Выберите категорию</option>
+                                {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="image_url" class="form-label">URL изображения</label>
+                        <input type="url" id="image_url" name="image_url" class="form-control" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-top: 20px;">
+                        <button type="submit" class="btn btn-primary">Создать товар</button>
+                        <a href="{{ url_for('auth_profile.profile') }}" class="btn btn-secondary">Отмена</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}

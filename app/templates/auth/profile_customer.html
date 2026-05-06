@@ -7,125 +7,91 @@
 
 <section class="profile-section">
     <div class="profile-grid">
-        <!-- Сайдбар с информацией о пользователе -->
-        <div class="profile-sidebar">
-            <div class="profile-avatar">
-                <div class="avatar-wrapper">
-                    <div class="avatar-image">
-                        {{ user.name[0] }}{{ user.second_name[0] }}
-                    </div>
-                    <label for="avatar-upload" class="avatar-upload">
-                        📷
-                    </label>
-                    <input type="file" 
-                           id="avatar-upload" 
-                           accept="image/*" 
-                           style="display: none;"
-                           onchange="previewAvatar(this)">
-                </div>
-                <h3 class="profile-name">{{ user.name }} {{ user.second_name }}</h3>
-                <p class="profile-email">{{ user.email }}</p>
-                <p class="profile-since">
-                    На сайте с {{ user.created_at.strftime('%d.%m.%Y') }}
-                </p>
-                <span class="role-badge" style="display: inline-block; background: #3b82f6; color: white; padding: 6px 12px; border-radius: 20px; font-size: 0.85rem; margin-top: 10px;">Покупатель</span>
-            </div>
+        {% set active_page = 'dashboard' %}
+        {% include "auth/_profile_sidebar.html" %}
 
-            <ul class="profile-menu">
-                <li class="active">
-                    <a href="{{ url_for('auth_profile.profile') }}">
-                        Обзор
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_orders') }}">
-                        Мои заказы
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_wishlist') }}">
-                        Избранное
-                    </a>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_profile.profile_addresses') }}">
-                        Мои адреса
-                    </a>
-                </li>
-                </li>
-                <li>
-                    <a href="{{ url_for('auth_login.logout') }}">
-                        Выйти
-                    </a>
-                </li>
-            </ul>
-        </div>
-
-        <!-- Основной контент -->
         <div class="profile-content">
             <div class="profile-header">
                 <h2>Обзор аккаунта покупателя</h2>
-                <a href="{{ url_for('auth_profile.profile_settings') }}" class="back-link-btn">
-                    Редактировать профиль
-                </a>
+                <a href="{{ url_for('products.catalog') }}" class="btn btn-primary">Перейти в каталог</a>
             </div>
 
-            <!-- Статистика для покупателя -->
             <div class="advantages-grid" style="margin-bottom: 30px;">
                 <div class="advantage-item">
+                    <div class="advantage-icon">💳</div>
+                    <h3>{{ "{:,.0f}".format(balance|default(0)).replace(',', ' ') }} ₽</h3>
+                    <p>Текущий баланс</p>
+                </div>
+                <div class="advantage-item">
+                    <div class="advantage-icon">📦</div>
                     <h3>{{ profile_stats.active_orders_count }}</h3>
                     <p>Активных заказов</p>
                 </div>
                 <div class="advantage-item">
+                    <div class="advantage-icon">♥</div>
                     <h3>{{ profile_stats.wishlist_count }}</h3>
                     <p>В избранном</p>
                 </div>
                 <div class="advantage-item">
+                    <div class="advantage-icon">⭐</div>
                     <h3>{{ "%.1f"|format(profile_stats.rating) }}</h3>
                     <p>Рейтинг</p>
                 </div>
-                <div class="advantage-item">
-                    <h3>{{ profile_stats.bonuses }} ₽</h3>
-                    <p>Бонусы</p>
+            </div>
+
+            <div class="analytics-section" style="margin-bottom: 30px;">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">Пополнить баланс</h3>
+                </div>
+                <form method="post" action="{{ url_for('auth_profile.top_up_balance') }}" style="display: flex; gap: 12px; flex-wrap: wrap; align-items: end;">
+                    <div class="form-group" style="margin: 0; min-width: 220px; flex: 1;">
+                        <label for="amount" class="form-label">Сумма, ₽</label>
+                        <input type="number" id="amount" name="amount" min="1" max="1000000" step="0.01" class="form-control" required placeholder="1000.00">
+                    </div>
+                    <button type="submit" class="btn btn-primary">Пополнить</button>
+                </form>
+            </div>
+
+            <div class="analytics-section">
+                <div class="analytics-header">
+                    <h3 class="analytics-title">Последние покупки</h3>
+                    <a href="{{ url_for('auth_profile.profile_orders') }}" class="btn btn-secondary">Вся история</a>
+                </div>
+
+                <div class="orders-grid">
+                    {% if recent_orders %}
+                        {% for order in recent_orders %}
+                            <div class="order-card">
+                                <div class="order-header">
+                                    <span class="order-number">Заказ #{{ order.id }}</span>
+                                    <span class="order-status">{{ order.status }}</span>
+                                </div>
+                                <div class="order-body">
+                                    <p style="color: var(--text-light); margin-bottom: 8px;">
+                                        {{ order.date.strftime('%d.%m.%Y %H:%M') if order.date else 'N/A' }}
+                                    </p>
+                                    <p>
+                                        {% for item in order['items'][:2] %}
+                                            {{ item.name }}{% if not loop.last %}, {% endif %}
+                                        {% endfor %}
+                                        {% if order['items']|length > 2 %} ...{% endif %}
+                                    </p>
+                                </div>
+                                <div class="order-footer">
+                                    <span class="order-price">{{ "{:,.0f}".format(order.total).replace(',', ' ') }} ₽</span>
+                                    <a href="{{ url_for('auth_profile.profile_orders') }}" class="btn-link">Подробнее →</a>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(124,58,237,0.05); border-radius: 12px;">
+                            <p style="color: var(--text-light); margin-bottom: 20px;">У вас пока нет заказов</p>
+                            <a href="{{ url_for('products.catalog') }}" class="btn btn-primary">Начать покупки</a>
+                        </div>
+                    {% endif %}
                 </div>
             </div>
 
-            <!-- Последние заказы -->
-            <h3 style="margin-bottom: 20px; color: var(--dark-purple);">Последние заказы</h3>
-            <div class="orders-grid">
-                {% if recent_orders %}
-                    {% for order in recent_orders %}
-                    <div class="order-card">
-                        <div class="order-header">
-                            <span class="order-number">Заказ #{{ order.id }}</span>
-                            <span class="order-status status-{{ order.status }}">{{ order.status_name }}</span>
-                        </div>
-                        <div class="order-body">
-                            <p style="color: var(--text-light); margin-bottom: 5px;">
-                                {{ order.date.strftime('%d.%m.%Y') }}
-                            </p>
-                            <p style="margin-bottom: 5px;">
-                                {% for item in order.items[:2] %}
-                                    {{ item.name }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                                {% if order.items|length > 2 %} ...{% endif %}
-                            </p>
-                        </div>
-                        <div class="order-footer">
-                            <span class="order-price">{{ order.total }} ₽</span>
-                            <a href="#" class="btn-link">Подробнее →</a>
-                        </div>
-                    </div>
-                    {% endfor %}
-                {% else %}
-                    <div style="grid-column: 1/-1; text-align: center; padding: 40px; background: rgba(124,58,237,0.05); border-radius: 15px;">
-                        <p style="color: var(--text-light); margin-bottom: 20px;">У вас пока нет заказов</p>
-                        <a href="{{ url_for('main.main_page') }}" class="back-link-btn">Начать покупки</a>
-                    </div>
-                {% endif %}
-            </div>
-
-            <!-- АНАЛИТИКА ПОКУПАТЕЛЯ -->
             <div class="analytics-section" style="margin-top: 40px;">
                 <div class="analytics-header">
                     <h3 class="analytics-title">Моя статистика</h3>
@@ -138,7 +104,6 @@
                     </div>
                 </div>
 
-                <!-- KPI-карточки для покупателя -->
                 <div class="kpi-grid" id="buyerKpiGrid">
                     <div class="kpi-card loading" style="height: 120px;"></div>
                     <div class="kpi-card loading" style="height: 120px;"></div>
@@ -146,13 +111,10 @@
                     <div class="kpi-card loading" style="height: 120px;"></div>
                 </div>
 
-                <!-- ТОП категории покупателя -->
-                <div style="margin-bottom: 30px;">
-                    <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Мои любимые категории</h3>
-                    <div class="top-list" id="buyerTopCategories">
-                        <div class="top-item" style="justify-content: center; padding: 30px;">
-                            <span style="color: var(--text-light);">Загрузка...</span>
-                        </div>
+                <h3 style="margin-bottom: 15px; color: var(--dark-purple);">Любимые категории</h3>
+                <div class="top-list" id="buyerTopCategories">
+                    <div class="top-item" style="justify-content: center; padding: 30px;">
+                        <span style="color: var(--text-light);">Загрузка...</span>
                     </div>
                 </div>
             </div>
@@ -161,77 +123,50 @@
 </section>
 
 <script>
-document.addEventListener('DOMContentLoaded', async function() {
+document.addEventListener('DOMContentLoaded', function() {
     let currentPeriod = '30d';
-    
+
     async function loadBuyerAnalytics(period) {
         try {
             const response = await fetch('/auth/api/buyer/stats?period=' + period);
             const data = await response.json();
             renderBuyerKPI(data);
-            renderBuyerTopCategories(data.top_categories);
+            renderBuyerTopCategories(data.top_categories || []);
         } catch (error) {
             console.error('Ошибка загрузки аналитики:', error);
         }
     }
-    
+
     function renderBuyerKPI(data) {
-        const html = '<div class="kpi-card">' +
-            '<div class="kpi-icon">📦</div>' +
-            '<div class="kpi-label">Заказов</div>' +
-            '<div class="kpi-value">' + data.orders_count + '</div>' +
-            '</div>' +
-            '<div class="kpi-card">' +
-            '<div class="kpi-icon">💰</div>' +
-            '<div class="kpi-label">Потрачено</div>' +
-            '<div class="kpi-value">' + Math.round(data.total_spent).toLocaleString('ru-RU') + ' ₽</div>' +
-            '</div>' +
-            '<div class="kpi-card">' +
-            '<div class="kpi-icon">🎯</div>' +
-            '<div class="kpi-label">Средний чек</div>' +
-            '<div class="kpi-value">' + Math.round(data.avg_check).toLocaleString('ru-RU') + ' ₽</div>' +
-            '</div>' +
-            '<div class="kpi-card">' +
-            '<div class="kpi-icon">⭐</div>' +
-            '<div class="kpi-label">Категорий</div>' +
-            '<div class="kpi-value">' + data.top_categories.length + '</div>' +
-            '</div>';
-        document.getElementById('buyerKpiGrid').innerHTML = html;
+        document.getElementById('buyerKpiGrid').innerHTML =
+            '<div class="kpi-card"><div class="kpi-icon">📦</div><div class="kpi-label">Заказов</div><div class="kpi-value">' + data.orders_count + '</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">💰</div><div class="kpi-label">Потрачено</div><div class="kpi-value">' + Math.round(data.total_spent).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">🎯</div><div class="kpi-label">Средний чек</div><div class="kpi-value">' + Math.round(data.avg_check).toLocaleString('ru-RU') + ' ₽</div></div>' +
+            '<div class="kpi-card"><div class="kpi-icon">⭐</div><div class="kpi-label">Категорий</div><div class="kpi-value">' + (data.top_categories || []).length + '</div></div>';
     }
-    
+
     function renderBuyerTopCategories(categories) {
-        if (categories.length === 0) {
-            document.getElementById('buyerTopCategories').innerHTML = 
-                '<div class="empty-state" style="margin: 0; border-radius: 0;">' +
-                '<p style="color: var(--text-light);">Нет данных о покупках</p>' +
-                '</div>';
+        if (!categories.length) {
+            document.getElementById('buyerTopCategories').innerHTML = '<div class="empty-state" style="margin: 0; border-radius: 0;"><p style="color: var(--text-light);">Нет данных о покупках</p></div>';
             return;
         }
-        let html = '';
-        categories.forEach((c, idx) => {
-            html += '<div class="top-item">' +
-                '<div style="display: flex; align-items: center; flex: 1;">' +
-                '<div class="top-item-rank">' + (idx + 1) + '</div>' +
-                '<div class="top-item-info">' +
-                '<div class="top-item-name">' + c.name + '</div>' +
-                '<div class="top-item-meta">' + c.orders + ' заказов • ' + c.qty + ' товаров • ' + Math.round(c.spent).toLocaleString('ru-RU') + ' ₽</div>' +
-                '</div>' +
-                '</div>' +
-                '<div class="top-item-value">' + c.qty + '</div>' +
-                '</div>';
-        });
-        document.getElementById('buyerTopCategories').innerHTML = html;
+
+        document.getElementById('buyerTopCategories').innerHTML = categories.map(function(c, idx) {
+            return '<div class="top-item"><div style="display: flex; align-items: center; flex: 1;"><div class="top-item-rank">' + (idx + 1) + '</div><div class="top-item-info"><div class="top-item-name">' + c.name + '</div><div class="top-item-meta">' + c.orders + ' заказов • ' + c.qty + ' товаров • ' + Math.round(c.spent).toLocaleString('ru-RU') + ' ₽</div></div></div><div class="top-item-value">' + c.qty + '</div></div>';
+        }).join('');
     }
-    
+
     document.getElementById('buyerPeriodFilter').addEventListener('click', function(e) {
         if (e.target.classList.contains('period-btn')) {
-            document.querySelectorAll('#buyerPeriodFilter .period-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('#buyerPeriodFilter .period-btn').forEach(function(btn) {
+                btn.classList.remove('active');
+            });
             e.target.classList.add('active');
             currentPeriod = e.target.dataset.period;
             loadBuyerAnalytics(currentPeriod);
         }
     });
-    
+
     loadBuyerAnalytics(currentPeriod);
 });
 </script>
