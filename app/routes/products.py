@@ -24,6 +24,30 @@ from app.models import (
 products_bp = Blueprint("products", __name__, url_prefix="/products")
 
 
+def _review_permission(user_id, product_id):
+    has_purchased = (
+        db.session.query(OrderItem.id)
+        .join(Order, OrderItem.order_id == Order.id)
+        .filter(
+            Order.buyer_id == user_id,
+            OrderItem.items_id == product_id,
+        )
+        .first()
+        is not None
+    )
+
+    existing_review = Review.query.filter_by(
+        user_id=user_id,
+        product_id=product_id,
+    ).first()
+
+    return {
+        "has_purchased": has_purchased,
+        "has_reviewed": existing_review is not None,
+        "can_review": has_purchased and existing_review is None,
+    }
+
+
 @products_bp.route("/")
 def catalog():
     """Каталог товаров."""
@@ -47,6 +71,18 @@ def catalog():
 
     products = query.paginate(page=page, per_page=per_page, error_out=False)
     categories = Category.query.all()
+    product_ids = [product.id for product in products.items]
+    image_by_product = {}
+
+    if product_ids:
+        product_images = (
+            ProductImage.query
+            .filter(ProductImage.product_id.in_(product_ids))
+            .order_by(ProductImage.image_id)
+            .all()
+        )
+        for image in product_images:
+            image_by_product.setdefault(image.product_id, image.url)
 
     for product in products.items:
         reviews_stats = db.session.query(
@@ -56,6 +92,7 @@ def catalog():
 
         product.avg_rating = reviews_stats.avg_rating or 0
         product.review_count = reviews_stats.review_count or 0
+        product.primary_image_url = image_by_product.get(product.id)
 
     return render_template(
         "products/catalog.html",
@@ -85,24 +122,13 @@ def product_detail(product_id):
         avg_rating = 0
         review_count = 0
 
-    can_review = False
+    review_permission = {
+        "has_purchased": False,
+        "has_reviewed": False,
+        "can_review": False,
+    }
     if current_user.is_authenticated:
-        has_purchased = (
-            db.session.query(OrderItem)
-            .join(Order)
-            .filter(
-                Order.buyer_id == current_user.id,
-                OrderItem.items_id == product_id,
-            )
-            .first()
-            is not None
-        )
-
-        existing_review = Review.query.filter_by(
-            user_id=current_user.id,
-            product_id=product_id,
-        ).first()
-        can_review = has_purchased and not existing_review
+        review_permission = _review_permission(current_user.id, product_id)
 
     return render_template(
         "products/product_detail.html",
@@ -111,7 +137,9 @@ def product_detail(product_id):
         reviews=reviews,
         avg_rating=avg_rating,
         review_count=review_count,
-        can_review=can_review,
+        can_review=review_permission["can_review"],
+        has_purchased=review_permission["has_purchased"],
+        has_reviewed=review_permission["has_reviewed"],
     )
 
 
@@ -267,6 +295,16 @@ def checkout():
 def add_review(product_id):
     """Добавление отзыва."""
     Product.query.get_or_404(product_id)
+    review_permission = _review_permission(current_user.id, product_id)
+
+    if not review_permission["has_purchased"]:
+        flash("Оставить отзыв можно только после покупки товара.", "warning")
+        return redirect(url_for("products.product_detail", product_id=product_id))
+
+    if review_permission["has_reviewed"]:
+        flash("Вы уже оставляли отзыв на этот товар.", "warning")
+        return redirect(url_for("products.product_detail", product_id=product_id))
+
     rating = request.form.get("rating", type=int)
     title = request.form.get("title", "").strip()
     comment = request.form.get("comment", "").strip()
